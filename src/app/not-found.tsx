@@ -10,7 +10,7 @@ import { BackButton } from '@/components/ui/samislam/back-button'
 const NotFoundPage = async () => {
   const t = await getTranslate()
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white to-green-100 p-4 dark:from-green-900 dark:to-green-800">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-b from-white to-green-100 p-4 dark:from-green-900 dark:to-green-800">
       <div className="w-full max-w-2xl text-center">
         <div className="mb-8 animate-bounce">
           <AppIcon className="mx-auto h-20 w-20 text-green-400 dark:text-green-200" />

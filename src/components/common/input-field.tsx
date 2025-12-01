@@ -61,7 +61,7 @@ export interface InputFieldProps<T extends FieldValues, N extends Path<T>> {
  * Parent styling (Tailwind)
  *   ```tsx
  *   <div className="
- *   [&_[data-slot=label]]:text-slate-700
+ *   **:data-[slot=label]:text-slate-700
  *   [&_[data-has-error=true]_[data-slot=label]]:text-red-600
  *   ">
  *   <InputField

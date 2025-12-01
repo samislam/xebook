@@ -18,7 +18,7 @@ export default function Error(props: ErrorProps) {
   useEffect(() => console.error(error), [error])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-b from-gray-50 to-gray-100 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-lg space-y-8 text-center">
         <MotionDiv
           initial={{ opacity: 0, y: -20 }}
