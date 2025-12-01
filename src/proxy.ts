@@ -15,6 +15,5 @@ export const config = {
   matcher: [
     '/(api|trpc)(.*)', // Always run for API routes,
     '/((?!_next|.*\\..*).*)', // Skip Next.js internals and all static files, unless found in search params
-  ],
-  runtime: 'nodejs',
+  ]
 }
