@@ -1,7 +1,8 @@
+import { Button } from '@/components/ui/shadcnui/button'
 import { getTranslate } from '@/lib/tolgee/tolgee-server'
+import { HomeDescription } from '../composables/home-description'
 import { ThemeSwitcher } from '@/components/common/theme-switcher'
 import { LanguageSwitcher } from '@/components/common/language-switcher'
-import { HomeDescription } from '../composables/home-description'
 
 const Page = async () => {
   const t = await getTranslate()
@@ -10,6 +11,7 @@ const Page = async () => {
       <h1 className="font-serif text-4xl font-bold">{t('@t<home-title>')}</h1>
       <HomeDescription />
       <LanguageSwitcher />
+      <Button>Click ❤️</Button>
       <ThemeSwitcher />
     </div>
   )
