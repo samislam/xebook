@@ -1,7 +1,7 @@
 {
   "servers": {
     "Sentry": {
-      "url": "https://mcp.sentry.dev/mcp/aya-sy/tktwifi",
+      "url": "https://mcp.sentry.dev/mcp/{ORG_ID}/{PROJECT_ID}",
       "type": "http"
     }
   }
