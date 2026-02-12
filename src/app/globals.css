@@ -109,3 +109,15 @@ body {
     @apply origin-center scale-100 transform cursor-pointer transition-transform duration-300 focus:outline-none active:scale-110;
   }
 }
+
+@utility clickable {
+  @apply origin-center scale-100 transform cursor-pointer transition-transform duration-300 hover:scale-105 focus:outline-none active:scale-95;
+}
+
+@utility btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring relative inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+}
+
+@utility btn-glass {
+  @apply border-border text-foreground h-9 rounded-md border bg-white/80 px-4 shadow-sm backdrop-blur transition hover:bg-white/90 dark:bg-white/10 dark:hover:bg-white/20;
+}

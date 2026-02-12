@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/shadcn/utils'
 import { type LibraryIcon, LibIcon } from '../samislam/lib-icon'
 
-export type InputProps = React.ComponentProps<'input'> & {
+export type CustomInputProps = {
   icon?: LibraryIcon
   iconClassName?: string
   rootClassname?: string
@@ -11,6 +11,7 @@ export type InputProps = React.ComponentProps<'input'> & {
   startAction?: React.ReactNode
   iconPosition?: 'start' | 'end'
 }
+export type InputProps = React.ComponentProps<'input'> & CustomInputProps
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const {
@@ -40,12 +41,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     <div
       className={cn(
         // container styles
-        'border-input flex h-9 w-full min-w-0 items-center rounded-md border px-3 py-1',
-        'bg-background shadow-sm transition-colors',
+        'border-input flex h-10 w-full min-w-0 items-center rounded-md border px-3',
+        'bg-white/80 shadow-sm transition-colors dark:bg-white/10',
         // react to child focus
         'focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-2',
         // invalid state if the INPUT carries aria-invalid
-        'aria-[invalid=true]:border-destructive focus-within:aria-[invalid=true]:ring-destructive/40',
+        'aria-invalid:border-destructive focus-within:aria-invalid:ring-destructive/40',
         // disabled state if the INPUT is disabled (visual only)
         'disabled:cursor-not-allowed disabled:opacity-50',
         rootClassname
@@ -59,10 +60,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         type={type}
         data-slot="input"
         className={cn(
-          'm-0 w-full rounded-none border-0 bg-transparent p-0 outline-none',
-          'text-base font-semibold md:text-sm',
+          'm-0 h-full w-full appearance-none rounded-none border-0! p-0 shadow-none! outline-none',
+          'text-base leading-none font-semibold',
           'placeholder:text-muted-foreground',
           'selection:bg-primary selection:text-primary-foreground',
+          'focus-visible:ring-0 focus-visible:outline-none',
           // only matters for type='file'
           'file:text-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium',
           className

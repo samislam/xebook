@@ -17,7 +17,7 @@ async function main() {
   console.log(chalk.cyanBright('Using environment file: '), chalk.bold.greenBright(dotenvFile))
 
   // Read command-line arguments
-  const args = process.argv.slice(2) // Ignore "node" and script filename
+  const args = process.argv.slice(2) // Ignore "node/bun" and script filename
   let mode: TolgeeRunMode = args[0] as TolgeeRunMode // e.g., "pull" or "compare"
   if (!mode)
     mode = await select<TolgeeRunMode>({
@@ -63,6 +63,7 @@ async function main() {
       execute: new TolgeeCli({
         mode,
         removeUnused,
+        configPath: './src/lib/tolgee/tolgee.config.mjs',
       }).command,
     }).command
   )

@@ -1,9 +1,10 @@
 import clsx from 'clsx'
-import { cn } from '@/utils/cn'
+import { ReactNode } from 'react'
+import { cn } from '@/lib/shadcn/utils'
 import { LibIcon, LibraryIcon } from './lib-icon'
 
 export interface LoadingProps {
-  label?: string
+  label?: ReactNode
   thin?: boolean
   className?: string
   horizontal?: boolean

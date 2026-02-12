@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react'
 import { ThemeProvider } from 'next-themes'
 import appConfig from '@/config/app.config'
 import { getLocale } from 'next-intl/server'
+import { clientEnv } from '@/server/client-env'
 import { ClientPlugger } from './client-plugger'
 import { AppLanguages } from '@/types/app.types'
 import { pageDefs } from '@/config/pages.config'
@@ -12,6 +13,7 @@ import { getStaticData } from '@/lib/tolgee/tolgee-shared'
 import { TolgeeNextProvider } from '@/lib/tolgee/tolgee-client'
 import { MetadataGenerateFn } from '@/lib/next/metadata-generator'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { EnvironmentRibbon } from '@/components/common/environment-ribbon'
 import { TolgeeLoadingScreen } from '@/components/common/tolgee-loading-screen'
 import { TanstackQueryProvider } from '@/lib/tanstack-query/tanstack-query-provider'
 import './globals.css'
@@ -22,14 +24,15 @@ interface Props extends PropsWithChildren {
 
 export default async function RootLayout(props: Props) {
   const { children } = props
-  const locale = (await getLocale()) as AppLanguages
+  const locale = (await getLocale()) as AppLanguages // # your logic to fetch the specific user locale
   const locales = await getStaticData([appConfig.fallbackLanguage, locale])
+  const fontClassname = locale === 'ar' ? cairo.className : geistSans.className
 
   return (
     <NextIntlClientProvider locale={locale}>
       <TolgeeNextProvider locale={locale} locales={locales}>
         <html dir={locale === 'ar' ? 'rtl' : 'ltr'} lang={locale} suppressHydrationWarning>
-          <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <body className={`${fontClassname} antialiased`}>
             <ThemeProvider
               enableSystem
               attribute="class"
@@ -38,6 +41,7 @@ export default async function RootLayout(props: Props) {
             >
               <TanstackQueryProvider>
                 <NuqsAdapter>
+                  <EnvironmentRibbon environment={clientEnv.NEXT_PUBLIC_ENVIRONMENT} />
                   {children}
                   <ReactQueryDevtools initialIsOpen={false} />
                   <TolgeeLoadingScreen />
@@ -52,14 +56,56 @@ export default async function RootLayout(props: Props) {
   )
 }
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-  weight: '100 900',
+const cairo = localFont({
+  variable: '--font-cairo',
+  display: 'swap',
+  src: [
+    {
+      path: './fonts/cairo/static/Cairo-ExtraLight.ttf',
+      weight: '200',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-Light.ttf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-Medium.ttf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-SemiBold.ttf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-ExtraBold.ttf',
+      weight: '800',
+      style: 'normal',
+    },
+    {
+      path: './fonts/cairo/static/Cairo-Black.ttf',
+      weight: '900',
+      style: 'normal',
+    },
+  ],
 })
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
+
+const geistSans = localFont({
+  src: './fonts/geist/GeistVF.woff',
+  variable: '--font-geist-sans',
   weight: '100 900',
 })
 

@@ -41,5 +41,7 @@ yarn-error.log*
 
 !.env.example
 src/generated
-
+temp
 dist
+# Sentry Config File
+.env.sentry-build-plugin

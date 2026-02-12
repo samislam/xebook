@@ -57,14 +57,13 @@ export default {
   apiUrl: TOLGEE_API_URL,
   apiKey: TOLGEE_API_KEY,
   format: 'JSON_TOLGEE',
-  patterns: ['./src/**/*.ts?(x)'],
-  extractor: './src/lib/tolgee/tolgee-extractor.mjs',
-  pull: { path: './src/i18n' },
+  patterns: ['../../**/*.ts?(x)'],
+  extractor: './tolgee-extractor.mjs',
+  pull: { path: '../../i18n' },
   push: {
     files: [
-      { path: './src/i18n/en.json', language: 'en' },
-      { path: './src/i18n/ar.json', language: 'ar' },
-      { path: './src/i18n/tr.json', language: 'tr' },
+      { path: '../../i18n/en.json', language: 'en' },
+      { path: '../../i18n/ar.json', language: 'ar' },
       // add more languages as needed
     ],
     forceMode: 'OVERRIDE',

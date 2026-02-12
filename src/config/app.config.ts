@@ -13,7 +13,7 @@ export default createAppConfig({
   appName: 'Next-web website template',
   appDescription: concat('@Next-web web template'),
   i18nRoutingDef: {
-    localePrefix: 'always', // defaults to have no URL prefix (no /en/users, just /users)
+    localePrefix: 'never', // defaults to have no URL prefix (no /en/users, just /users)
     localeCookie: {
       name: LOCALE_COOKIE,
       secure: false,

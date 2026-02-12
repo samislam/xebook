@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/shadcn/utils'
 import { LibIcon, LibraryIcon } from '../samislam/lib-icon'
 
 export interface LoadingProps {

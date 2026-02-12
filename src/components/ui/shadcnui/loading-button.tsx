@@ -1,5 +1,5 @@
 import React from 'react'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/shadcn/utils'
 import { Slot } from '@radix-ui/react-slot'
 import { ButtonProps, buttonVariants } from './button'
 import { Loading, LoadingProps } from '../samislam/loading'

@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { cn } from '@/lib/shadcn/utils'
 import { FormItem, FormLabel, FormMessage } from '../ui/shadcnui/form'
 import { FormControl, FormDescription, FormField } from '../ui/shadcnui/form'
 import { Control, ControllerRenderProps, FieldValues, Path } from 'react-hook-form'
@@ -8,15 +9,14 @@ import { Control, ControllerRenderProps, FieldValues, Path } from 'react-hook-fo
  *
  * Props for {@link InputField}.
  *
- * @template T  - React Hook Form field values object.
- * @template N  - Path within {@link T} (i.e., the form field name).
+ * @template T - React Hook Form field values object.
+ * @template N - Path within {@link T} (i.e., the form field name).
  *
- *              The component exposes stable `data-slot` attributes for parent styling:
+ *   The component exposes stable `data-slot` attributes for parent styling:
  *
- *              - `data-slot="root" | "label" | "control" | "description" | "message"` It also
- *              toggles:
- *              - `data-has-error="true"` on the root when an error is present -
- *              `data-required="true"` on the label when the field is required.
+ *   - `data-slot="root" | "label" | "control" | "description" | "message"` It also toggles:
+ *   - `data-has-error="true"` on the root when an error is present
+ *   - `data-required="true"` on the label when the field is required
  */
 export interface InputFieldProps<T extends FieldValues, N extends Path<T>> {
   /** Field name (RHF path) */
@@ -53,15 +53,14 @@ export interface InputFieldProps<T extends FieldValues, N extends Path<T>> {
  * Slots (useful for parent selectors):
  *
  * - `data-slot="root" | "label" | "control" | "description" | "message"` State flags:
- * - `data-has-error` on the root when `errorMessage` is provided - `data-required` on the label
- * when `required` is true.
+ * - `data-has-error` on the root when `errorMessage` is provided
+ * - `data-required` on the label when `required` is true
  *
  * @example
- *
- * Parent styling (Tailwind)
+ *   Parent styling (Tailwind)
  *   ```tsx
  *   <div className="
- *   **:data-[slot=label]:text-slate-700
+ *   [&_[data-slot=label]]:text-slate-700
  *   [&_[data-has-error=true]_[data-slot=label]]:text-red-600
  *   ">
  *   <InputField
@@ -73,7 +72,6 @@ export interface InputFieldProps<T extends FieldValues, N extends Path<T>> {
  *   />
  *   </div>
  *   ```
- *
  */
 export const InputField = <T extends FieldValues, N extends Path<T>>(
   props: InputFieldProps<T, N>
@@ -98,12 +96,12 @@ export const InputField = <T extends FieldValues, N extends Path<T>>(
         <FormItem
           data-slot="root"
           data-has-error={errorMessage ? true : undefined}
-          className={className}
+          className={cn(className, 'my-3')}
         >
           <FormLabel
             data-slot="label"
             data-required={required ? true : undefined}
-            className="flex gap-x-1"
+            className="text-md flex gap-x-1 font-semibold"
           >
             {label}
             {required && (

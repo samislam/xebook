@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { pageDefs } from '@/config/pages.config'
-import AppIcon from '@/components/common/app-icon'
+import { AppIcon } from '@/components/common/app-icon'
 import { ArrowLeftIcon, HomeIcon } from 'lucide-react'
 import { Button } from '@/components/ui/shadcnui/button'
 import { getTranslate } from '@/lib/tolgee/tolgee-server'

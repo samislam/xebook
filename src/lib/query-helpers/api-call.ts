@@ -24,11 +24,12 @@ export async function apiCall<T>(apiCall: Promise<AxiosResponse<T>>): Promise<Ap
       payload: res.data,
     }
   } catch (err) {
-    const axiosErr = err as AxiosError<{ error?: string }>
+    const axiosErr = err as AxiosError<{ error?: string; code?: string; errorCode?: string }>
     return {
       success: false,
       statusCode: axiosErr.response?.status ?? 500,
       error: axiosErr.response?.data?.error ?? axiosErr.message,
+      errorCode: axiosErr.response?.data?.code ?? axiosErr.response?.data?.errorCode,
     }
   }
 }

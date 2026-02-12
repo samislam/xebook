@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/shadcn/utils'
 import appConfig from '@/config/app.config'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '../ui/samislam/motion'

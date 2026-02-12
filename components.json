@@ -4,18 +4,22 @@
   "rsc": true,
   "tsx": true,
   "tailwind": {
-    "config": "tailwind.config.ts",
-    "css": "src/app/globals.css",
-    "baseColor": "neutral",
+    "prefix": "",
     "cssVariables": true,
-    "prefix": ""
+    "baseColor": "neutral",
+    "css": "src/app/globals.css",
+    "config": "tailwind.config.ts"
   },
+
   "aliases": {
-    "utils": "@/utils",
     "hooks": "@/hooks",
+    "utils": "@/utils",
     "lib": "@/lib/shadcn",
     "components": "@/components",
     "ui": "@/components/ui/shadcnui"
   },
-  "iconLibrary": "lucide"
+  "iconLibrary": "lucide",
+  "registries": {
+    "@wds": "https://wds-shadcn-registry.netlify.app/r/{name}.json"
+  }
 }

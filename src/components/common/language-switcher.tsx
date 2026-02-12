@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/shadcn/utils'
 import { useLocale } from '@/hooks/use-locale'
 import { SyriaFlag } from '../icons/syria-flag'
 import { CanadaFlag } from '../icons/canada-flag'
@@ -17,10 +17,10 @@ export const LanguageSwitcher = (props: LanguageSwitcherProps) => {
   const { className, skeletonClassName } = props
   const { changeLocale, isSwitching, locale } = useLocale()
 
-  if (isSwitching) return <Skeleton className={cn('h-5 w-[180px]', skeletonClassName)} />
+  if (isSwitching) return <Skeleton className={cn('h-5 w-45', skeletonClassName)} />
   return (
     <Select value={locale} onValueChange={changeLocale}>
-      <SelectTrigger className={cn('w-[180px]', className)}>
+      <SelectTrigger className={cn('w-45', className)}>
         <SelectValue placeholder="Locale" />
       </SelectTrigger>
       <SelectContent>

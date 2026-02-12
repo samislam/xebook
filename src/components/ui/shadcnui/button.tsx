@@ -1,12 +1,16 @@
 import * as React from 'react'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/shadcn/utils'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { TooltipTrigger } from '@/components/ui/shadcnui/tooltip'
-import { Tooltip, TooltipContent, TooltipProvider } from '@/components/ui/shadcnui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/shadcnui/tooltip'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -26,7 +30,7 @@ const buttonVariants = cva(
         icon: 'h-9 w-9',
       },
       clickable: {
-        true: 'origin-center transform transition-transform duration-100 active:scale-105',
+        true: 'origin-center transform transition-transform duration-100 hover:scale-105 active:scale-95',
         false: '',
       },
     },
@@ -48,7 +52,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : 'button'
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, clickable, className }))}
+        className={cn(
+          'cursor-pointer hover:brightness-110',
+          buttonVariants({ variant, size, clickable, className })
+        )}
         ref={ref}
         {...props}
       />
@@ -72,7 +79,9 @@ export function ButtonWithTooltip({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button {...buttonProps}>{children}</Button>
+          <span>
+            <Button {...buttonProps}>{children}</Button>
+          </span>
         </TooltipTrigger>
         <TooltipContent side="top">{tooltipText}</TooltipContent>
       </Tooltip>

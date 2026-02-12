@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { PropsWithChildren } from 'react'
 import { useScroll } from '@/hooks/use-scroll'
+import { Link } from '@/lib/next-intl/navigation'
 import { useFullPath } from '@/hooks/use-fullpath'
 
 /** Props for the {@link ScrollLink} component. */

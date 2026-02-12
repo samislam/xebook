@@ -17,7 +17,7 @@ async function main() {
   console.log(chalk.cyanBright('Using environment file: '), chalk.bold.greenBright(dotenvFile))
 
   // Read command-line arguments
-  const args = process.argv.slice(2) // Ignore "node" and script filename
+  const args = process.argv.slice(2) // Ignore "node/bun" and script filename
   let mode: PrismaRunMode = args[0] as PrismaRunMode // e.g., "migrate" or "studio"
   if (!mode)
     mode = await select({

@@ -1,5 +1,6 @@
-import { runSeeders } from '@/lib/prisma/run-seeders'
 import { PrismaClient } from '@/generated/prisma'
+import { runSeeders } from '@/lib/prisma/run-seeders'
+// import { seedExample } from '@/database/seeders/example'
 
 const prisma = new PrismaClient()
 console.log('\n')
@@ -7,6 +8,7 @@ console.log('\n')
 async function main() {
   runSeeders(prisma, [
     /** Your seeders goes here */
+    // seedExample
   ])
 }
 
