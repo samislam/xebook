@@ -14,5 +14,6 @@
   },
   "explorerExclude.backup": {},
   "i18n-ally.localesPaths": ["src/i18n"],
-  "css.customData": [".vscode/tailwind.json"]
+  "css.customData": [".vscode/tailwind.json"],
+  "prisma.pinToPrisma6": true
 }
