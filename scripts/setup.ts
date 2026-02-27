@@ -34,6 +34,5 @@ if (dotenvFile) {
     }).command,
   ])
 } else {
-  console.error('No env file found and DATABASE_URL is not set. Please define one first!')
-  process.exit(-1)
+  console.warn('No env file found and DATABASE_URL is not set. Please define one first!')
 }
