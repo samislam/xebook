@@ -4,10 +4,10 @@ import { middlewareStack, pipe } from 'nextjs-middleware-stack'
 import { appRoutingDef } from './lib/next-intl/app-routing-def'
 
 // const regExp = {
-  // Login/auth UI pages (optionally locale-prefixed), e.g. /auth/login or /en/auth/login
-  // publicRoutes: /^\/(?:[a-z]{2}\/)?auth(?:\/.*)?$/,
-  // application page routes (optionally locale-prefixed), e.g. /, /en/customers, /ar/settings
-  // protectedRoutes: /^\/(?:[a-z]{2}\/)?(?!auth(\/|$)).*/,
+// Login/auth UI pages (optionally locale-prefixed), e.g. /auth/login or /en/auth/login
+// publicRoutes: /^\/(?:[a-z]{2}\/)?auth(?:\/.*)?$/,
+// application page routes (optionally locale-prefixed), e.g. /, /en/customers, /ar/settings
+// protectedRoutes: /^\/(?:[a-z]{2}\/)?(?!auth(\/|$)).*/,
 // }
 
 export default middlewareStack<NextRequest>([
