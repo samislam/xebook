@@ -1,10 +1,13 @@
 import { ThemeSwitcher } from '@/components/common/theme-switcher'
+import { CalculateForm } from '../composables/calculate-form'
 
 const Page = async () => {
   return (
-    <div className="flex h-screen min-h-screen flex-col items-center justify-center gap-4">
-
-      <ThemeSwitcher />
+    <div className="relative flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeSwitcher />
+      </div>
+      <CalculateForm />
     </div>
   )
 }

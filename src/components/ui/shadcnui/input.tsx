@@ -24,6 +24,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     iconPosition = 'start',
     rootClassname,
     dir,
+    onWheel,
     ...rest
   } = props
 
@@ -59,6 +60,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         dir={dir}
         type={type}
         data-slot="input"
+        onWheel={(event) => {
+          if (type === 'number') {
+            event.currentTarget.blur()
+          }
+
+          onWheel?.(event)
+        }}
         className={cn(
           'm-0 h-full w-full appearance-none rounded-none border-0! p-0 shadow-none! outline-none',
           'text-base leading-none font-semibold',
