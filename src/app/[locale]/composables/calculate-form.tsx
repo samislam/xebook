@@ -37,7 +37,7 @@ export const CalculateForm = ({ onCalculate }: CalculateFormProps) => {
   }
 
   return (
-    <section className="w-full max-w-2xl rounded-2xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-black/20">
+    <section className="w-full max-w-2xl rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
       <h1 className="mb-1 text-2xl font-bold">Exchange Loop Calculator</h1>
       <p className="text-muted-foreground mb-6 text-sm">Configure your loop values below.</p>
 
