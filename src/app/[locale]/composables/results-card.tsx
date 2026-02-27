@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import numeral from 'numeral'
+import { TrendingUpDown } from 'lucide-react'
 import usdtIcon from '@/media/usdt.svg'
 import { type CalculationResult } from './calculate'
 
@@ -97,32 +98,48 @@ export const ResultsCard = ({ result }: ResultsCardProps) => {
             </div>
           </div>
 
-          <div className="border-border max-h-[520px] overflow-auto rounded-md border">
+          <div className="border-border max-h-130 overflow-auto rounded-md border">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="border-border border-r px-3 py-2" rowSpan={2}>
+                  <th
+                    className="border-border sticky top-0 z-30 border-r bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]"
+                    rowSpan={2}
+                  >
                     Loop
                   </th>
                   <th
-                    className="bg-red-100 px-3 py-2 text-center text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                    className="sticky top-0 z-30 bg-red-100 px-3 py-2 text-center text-red-700 dark:bg-red-900/30 dark:text-red-300"
                     colSpan={2}
                   >
                     BUY
                   </th>
                   <th
-                    className="border-border border-l bg-emerald-100 px-3 py-2 text-center text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                    className="border-border sticky top-0 z-30 border-l bg-emerald-100 px-3 py-2 text-center text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
                     colSpan={3}
                   >
                     SELL
                   </th>
                 </tr>
                 <tr>
-                  <th className="px-3 py-2">Buy</th>
-                  <th className="px-3 py-2">USDT</th>
-                  <th className="border-border border-l px-3 py-2">Sell (TRY)</th>
-                  <th className="px-3 py-2">Profit (TRY)</th>
-                  <th className="px-3 py-2">Trend</th>
+                  <th className="sticky top-8 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
+                    Buy
+                  </th>
+                  <th className="sticky top-8 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
+                    USDT
+                  </th>
+                  <th className="border-border sticky top-8 z-30 border-l bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
+                    Sell (TRY)
+                  </th>
+                  <th className="sticky top-8 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
+                    Profit (TRY)
+                  </th>
+                  <th className="sticky top-8 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
+                    <span className="inline-flex items-center gap-1">
+                      <TrendingUpDown className="h-3.5 w-3.5" aria-hidden />
+                      <span>Trend</span>
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -220,9 +237,11 @@ export const ResultsCard = ({ result }: ResultsCardProps) => {
                 })}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-[hsl(var(--border))] font-semibold">
-                  <td className="border-border border-r px-3 py-2">Total</td>
-                  <td className="px-3 py-2 text-red-600 dark:text-red-400">
+                <tr className="font-semibold">
+                  <td className="border-border sticky bottom-0 z-30 border-r bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_1px_0_hsl(var(--border))]">
+                    Total
+                  </td>
+                  <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2 text-red-600 shadow-[inset_0_1px_0_hsl(var(--border))] dark:text-red-400">
                     <div>
                       <p>
                         -{buyCurrency === 'USD' ? '$' : '₺'}
@@ -239,10 +258,10 @@ export const ResultsCard = ({ result }: ResultsCardProps) => {
                       </p>
                     </div>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_1px_0_hsl(var(--border))]">
                     <span>+{formatUsdt(totals?.usdt ?? 0)}</span>
                   </td>
-                  <td className="border-border border-l px-3 py-2">
+                  <td className="border-border sticky bottom-0 z-30 border-l bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_1px_0_hsl(var(--border))]">
                     <div>
                       <p>+₺{formatTry(totals?.sellTry ?? 0)}</p>
                       <p className="text-muted-foreground text-[10px]">
@@ -255,8 +274,8 @@ export const ResultsCard = ({ result }: ResultsCardProps) => {
                   <td
                     className={
                       (totals?.profitTry ?? 0) >= 0
-                        ? 'px-3 py-2 text-emerald-600 dark:text-emerald-400'
-                        : 'px-3 py-2 text-red-600 dark:text-red-400'
+                        ? 'sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2 text-emerald-600 shadow-[inset_0_1px_0_hsl(var(--border))] dark:text-emerald-400'
+                        : 'sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2 text-red-600 shadow-[inset_0_1px_0_hsl(var(--border))] dark:text-red-400'
                     }
                   >
                     <div>
@@ -266,7 +285,9 @@ export const ResultsCard = ({ result }: ResultsCardProps) => {
                       </p>
                     </div>
                   </td>
-                  <td className="text-muted-foreground px-3 py-2">---</td>
+                  <td className="text-muted-foreground sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_1px_0_hsl(var(--border))]">
+                    ---
+                  </td>
                 </tr>
               </tfoot>
             </table>
