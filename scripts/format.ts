@@ -4,6 +4,6 @@ import { runCommand } from '@clscripts/cl-common'
 runCommand(
   new Prettier({
     files: ['./**/*.{htm,html,css,md,mdx,js,jsx,ts,tsx}'],
-    ignore: ['next-env.d.ts'],
+    ignore: ['next-env.d.ts', '.agents'],
   }).command
 )

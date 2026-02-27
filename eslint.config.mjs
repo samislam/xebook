@@ -31,9 +31,11 @@ const eslintConfig = defineConfig([
         {
           vars: 'all',
           args: 'after-used',
+          caughtErrors: 'all',
           ignoreRestSiblings: true,
           varsIgnorePattern: '^_',
           argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
         },
       ],
     },

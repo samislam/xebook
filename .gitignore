@@ -37,11 +37,13 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-# next-env.d.ts
+next-env.d.ts
 
 !.env.example
 src/generated
 temp
 dist
+storage/uploads/*
+!storage/uploads/.gitkeep
 # Sentry Config File
 .env.sentry-build-plugin

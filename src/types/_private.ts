@@ -11,3 +11,5 @@ export type AppLocaleRoutingDef<L extends string> = StrictDeepOmit<
   >,
   { locales: true; defaultLocale: true; localeCookie: true }
 > & { localeCookie: CookieAttributes }
+
+export type MaybePromise<T> = T | Promise<T>

@@ -8,6 +8,7 @@ type NextIntlRequestConfig = Pick<RequestConfig, 'formats' | 'timeZone' | 'now'>
 export interface AppConfig<L extends string> {
   appName: string
   appDescription: string
+  uploadDir: string
   defaultTheme: AppThemes
   defaultLanguage: NoInfer<L>
   fallbackLanguage: NoInfer<L>

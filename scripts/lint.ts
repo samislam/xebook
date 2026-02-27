@@ -17,11 +17,18 @@ runCommandsSequentially([
   new EchoCli({
     message: chalk.greenBright('✔ No type errors were found'),
   }).command,
+
   new EchoCli({
     message: chalk.bold.cyanBright.italic('~ Eslint is now checking your project...'),
   }).command,
+
   // lint ---------
-  new Eslint({ scanPath: '.' }).command,
+  new Eslint({ scanPath: '.', ignorePatterns: ['.agents'] }).command,
+
+  new EchoCli({
+    message: chalk.greenBright('✔ No linting errors were found'),
+  }).command,
+
   new EchoCli({
     message: chalk.bold.cyanBright.italic('~ You should be able to build your project now'),
   }).command,

@@ -1,0 +1,16 @@
+stages:
+  - deploy
+
+deploy_staging:
+  stage: deploy
+  script:
+    - bash bin/staging/deploy.dev.sh
+  rules:
+    - if: '$STAGING_DEPLOY_ENABLED == "true" && $CI_COMMIT_BRANCH == "development"'
+
+deploy_production:
+  stage: deploy
+  script:
+    - bash bin/production/deploy.prod.sh
+  rules:
+    - if: '$PROD_DEPLOY_ENABLED == "true" && $CI_COMMIT_BRANCH == "main"'

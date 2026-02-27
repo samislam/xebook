@@ -10,7 +10,11 @@
     "**/node_modules": true,
     "**/.turbo": true,
     "**/dist": true,
-    "**/.next": true
+    "**/.next": true,
+    "**/.agents": true,
+    "**/*.tsbuildinfo": true,
+    "next-env.d.ts": true,
+    ".devcontainer": true
   },
   "explorerExclude.backup": {},
   "i18n-ally.localesPaths": ["src/i18n"],
