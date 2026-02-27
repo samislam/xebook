@@ -3,7 +3,6 @@ import { PropsWithChildren } from 'react'
 import { ThemeProvider } from 'next-themes'
 import appConfig from '@/config/app.config'
 import { getLocale } from 'next-intl/server'
-import { clientEnv } from '@/server/client-env'
 import { ClientPlugger } from './client-plugger'
 import { AppLanguages } from '@/types/app.types'
 import { pageDefs } from '@/config/pages.config'
@@ -41,7 +40,7 @@ export default async function RootLayout(props: Props) {
             >
               <TanstackQueryProvider>
                 <NuqsAdapter>
-                  <EnvironmentRibbon environment={clientEnv.NEXT_PUBLIC_ENVIRONMENT} />
+                  <EnvironmentRibbon environment="none" />
                   {children}
                   <ReactQueryDevtools initialIsOpen={false} />
                   <TolgeeLoadingScreen />
