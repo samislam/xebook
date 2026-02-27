@@ -1,3 +1,6 @@
+import { MaybePromise } from '@/types/_private'
+import { PropsWithChildren } from 'react'
+
 export interface PageProps<
   T extends {
     Queries?: Record<string, string | string[] | undefined>
@@ -16,3 +19,9 @@ export interface PageProps<
     }
   >
 }
+
+type Dict = Record<string, string | string[] | undefined>
+
+export type LayoutProps<T extends { Params?: Dict } = {}> = PropsWithChildren<{
+  params: MaybePromise<T['Params'] extends undefined ? Dict : T['Params']>
+}>

@@ -5,16 +5,16 @@ import { concat } from 'concat-str'
  *
  * @returns {string | undefined} The Tolgee Project ID if defined.
  */
-const TOLGEE_PROJECT_ID = process.env.TOLGEE_PROJECT_ID
+const NEXT_PUBLIC_TOLGEE_PROJECT_ID = process.env.NEXT_PUBLIC_TOLGEE_PROJECT_ID
 const TOLGEE_API_URL = process.env.NEXT_PUBLIC_TOLGEE_API_URL
 const TOLGEE_API_KEY = process.env.NEXT_PUBLIC_TOLGEE_API_KEY
 
 const checkRequiredEnvVariables = () => {
   // Check that all required environment variables are set
-  if (!TOLGEE_PROJECT_ID) {
+  if (!NEXT_PUBLIC_TOLGEE_PROJECT_ID) {
     console.error(
       concat(
-        'TOLGEE_PROJECT_ID was not found in the environment variables.',
+        'NEXT_PUBLIC_TOLGEE_PROJECT_ID was not found in the environment variables.',
         'Please add it to your .env.local file or include it in your command and try again.'
       )
     )
@@ -47,7 +47,7 @@ checkRequiredEnvVariables()
 
 // Output the configuration (uncomment for debugging)
 // console.table({
-//   TOLGEE_PROJECT_ID: TOLGEE_PROJECT_ID(),
+//   NEXT_PUBLIC_TOLGEE_PROJECT_ID: NEXT_PUBLIC_TOLGEE_PROJECT_ID(),
 //   TOLGEE_API_URL: TOLGEE_API_URL(),
 //   TOLGEE_API_KEY: TOLGEE_API_KEY(),
 // })
@@ -68,5 +68,5 @@ export default {
     ],
     forceMode: 'OVERRIDE',
   },
-  projectId: TOLGEE_PROJECT_ID,
+  projectId: NEXT_PUBLIC_TOLGEE_PROJECT_ID,
 }

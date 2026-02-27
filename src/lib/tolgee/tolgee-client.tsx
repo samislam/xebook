@@ -1,9 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { TolgeeBase } from './tolgee-shared'
 import { AppLanguages } from '@/types/app.types'
+import { useRouter } from '@/lib/next-intl/navigation'
 import { TolgeeProvider, TreeTranslationsData, useTolgeeSSR } from '@tolgee/react'
 
 type TolgeeNextProviderProps = {
