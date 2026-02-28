@@ -16,7 +16,7 @@ export const ResultsCard = ({ result }: ResultsCardProps) => {
   const profitPctLabel = `${isProfit ? '+' : '-'}${numeral(Math.abs(profitPct)).format('0,0.00')}%`
 
   return (
-    <section className="w-full max-w-2xl rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
+    <section className="w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
       <h2 className="mb-2 text-2xl font-bold">Results</h2>
       {!result && (
         <p className="text-muted-foreground text-sm">

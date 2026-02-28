@@ -27,9 +27,12 @@ enum TransactionCurrency {
 
 model TradeTransaction {
   id                  String              @id @default(uuid())
+  cycleId             String
+  cycle               TradeCycle          @relation(fields: [cycleId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   type                TransactionType
   transactionValue    Decimal?            @db.Decimal(18, 4)
   transactionCurrency TransactionCurrency?
+  usdTryRateAtBuy     Decimal?            @db.Decimal(18, 6)
   amountReceived      Decimal             @db.Decimal(18, 4)
   amountSold          Decimal?            @db.Decimal(18, 4)
   pricePerUnit        Decimal?            @db.Decimal(18, 6)
@@ -39,4 +42,14 @@ model TradeTransaction {
   occurredAt          DateTime            @default(now())
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
+
+  @@index([cycleId])
+}
+
+model TradeCycle {
+  id           String             @id @default(uuid())
+  name         String             @unique
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  transactions TradeTransaction[]
 }

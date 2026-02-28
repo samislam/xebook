@@ -5,6 +5,7 @@ import { Info } from 'lucide-react'
 import { AppTabs } from '../composables/app-tabs'
 import { ResultsCard } from '../composables/results-card'
 import { CalculateForm } from '../composables/calculate-form'
+import { LogoutIconButton } from '@/components/common/logout-icon-button'
 import { type CalculationResult } from '../composables/calculate'
 import { ThemeSwitcher } from '@/components/common/theme-switcher'
 
@@ -12,14 +13,15 @@ const Page = () => {
   const [result, setResult] = useState<CalculationResult | null>(null)
 
   return (
-    <div className="relative min-h-screen p-4 pt-16">
-      <div className="absolute top-4 right-4">
+    <div className="relative h-screen w-full p-4 pt-16">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <LogoutIconButton />
         <ThemeSwitcher />
       </div>
-      <div className="mx-auto mb-4 w-full max-w-7xl">
+      <div className="mb-4 w-full">
         <AppTabs />
       </div>
-      <div className="mx-auto mb-6 w-full max-w-7xl rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-sm leading-relaxed">
+      <div className="mb-6 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-sm leading-relaxed">
         <div className="mb-2 flex items-start gap-2">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" aria-hidden />
           <p>
@@ -34,11 +36,11 @@ const Page = () => {
           </p>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="w-full lg:max-w-2xl">
+      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="w-full lg:w-1/2">
           <CalculateForm onCalculate={setResult} />
         </div>
-        <div className="w-full lg:max-w-2xl">
+        <div className="w-full lg:w-1/2">
           <ResultsCard result={result} />
         </div>
       </div>

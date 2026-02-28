@@ -9,7 +9,7 @@ export const AppTabs = () => {
 
   return (
     <Tabs value={activeTab} className="w-full">
-      <TabsList className="grid w-full max-w-sm grid-cols-2">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="simulate" asChild>
           <Link href="/">Simulate</Link>
         </TabsTrigger>
