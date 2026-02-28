@@ -24,3 +24,10 @@ export const errorCodes = [
 export type AppErrorCodes = (typeof errorCodes)[number]
 
 export const LOCALE_COOKIE = 'NEXT_LOCALE'
+export const AUTH_COOKIE = 'AUTH_TOKEN'
+
+export const CURRENCY_SYMBOLS = {
+  USD: '$',
+  TRY: '₺',
+  USDT: 'USDT',
+} as const

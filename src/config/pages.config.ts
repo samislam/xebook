@@ -13,4 +13,10 @@ export const pageDefs = {
       }
     },
   },
+  login: {
+    href: '/login',
+    title: 'Login',
+    description: 'Login page',
+    icon: 'mdi:mdiLock',
+  },
 } as const satisfies PagesDefs

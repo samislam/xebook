@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { Info } from 'lucide-react'
-import { ThemeSwitcher } from '@/components/common/theme-switcher'
-import { CalculateForm } from '../composables/calculate-form'
+import { AppTabs } from '../composables/app-tabs'
 import { ResultsCard } from '../composables/results-card'
+import { CalculateForm } from '../composables/calculate-form'
 import { type CalculationResult } from '../composables/calculate'
+import { ThemeSwitcher } from '@/components/common/theme-switcher'
 
 const Page = () => {
   const [result, setResult] = useState<CalculationResult | null>(null)
@@ -14,6 +15,9 @@ const Page = () => {
     <div className="relative min-h-screen p-4 pt-16">
       <div className="absolute top-4 right-4">
         <ThemeSwitcher />
+      </div>
+      <div className="mx-auto mb-4 w-full max-w-7xl">
+        <AppTabs />
       </div>
       <div className="mx-auto mb-6 w-full max-w-7xl rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-sm leading-relaxed">
         <div className="mb-2 flex items-start gap-2">
