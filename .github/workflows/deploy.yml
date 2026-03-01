@@ -3,27 +3,40 @@ name: Deploy
 on:
   push:
     branches:
-      - development
       - main
   workflow_dispatch:
 
 jobs:
-  deploy_staging:
-    if: github.ref_name == 'development' && vars.STAGING_DEPLOY_ENABLED == 'true'
+  deploy:
+    if: vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy staging
-        run: bash bin/staging/deploy.dev.sh
+      - name: Setup deploy env file
+        env:
+          DEPLOY_ENV_FILE_CONTENT: ${{ secrets.DEPLOY_ENV_FILE_CONTENT }}
+        run: |
+          echo "$DEPLOY_ENV_FILE_CONTENT" > .env.deploy
 
-  deploy_production:
-    if: github.ref_name == 'main' && vars.PROD_DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
 
-      - name: Deploy production
-        run: bash bin/production/deploy.prod.sh
+      - name: Add deploy host to known_hosts
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_BRANCH: main
+          DEPLOY_ENV_FILE: .env.deploy
+        run: bash bin/deploy/deploy.sh
