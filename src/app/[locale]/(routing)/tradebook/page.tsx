@@ -35,6 +35,7 @@ import { TradebookTransactionsTable } from '../../composables/tradebook-transact
 
 type TransactionType = 'BUY' | 'SELL'
 type TransactionCurrency = 'USD' | 'TRY'
+type BuyInputMode = 'amount-received' | 'price-per-unit'
 type SellInputMode = 'amount-received' | 'price-per-unit'
 type SellFeeUnit = 'percent' | 'usdt'
 type BuyFeeUnit = 'percent' | 'usdt'
@@ -187,7 +188,9 @@ const TradebookPage = () => {
   const [transactionCurrency, setTransactionCurrency] = useState<TransactionCurrency>('USD')
   const [occurredAt, setOccurredAt] = useState(nowDateTimeLocal())
   const [transactionValue, setTransactionValue] = useState('')
+  const [buyInputMode, setBuyInputMode] = useState<BuyInputMode>('amount-received')
   const [buyAmountReceived, setBuyAmountReceived] = useState('')
+  const [buyPricePerUnit, setBuyPricePerUnit] = useState('')
   const [buyUsdTryRateAtBuy, setBuyUsdTryRateAtBuy] = useState('')
   const [buyFee, setBuyFee] = useState('')
   const [buyFeeUnit, setBuyFeeUnit] = useState<BuyFeeUnit>('usdt')
@@ -282,7 +285,9 @@ const TradebookPage = () => {
     setTransactionCurrency('USD')
     setOccurredAt(nowDateTimeLocal())
     setTransactionValue('')
+    setBuyInputMode('amount-received')
     setBuyAmountReceived('')
+    setBuyPricePerUnit('')
     setBuyUsdTryRateAtBuy('')
     setBuyFee('')
     setBuyFeeUnit('usdt')
@@ -314,28 +319,71 @@ const TradebookPage = () => {
 
     const payload =
       transactionType === 'BUY'
-        ? {
-            cycle: effectiveCycle,
-            type: 'BUY' as const,
-            transactionValue: Number.parseFloat(transactionValue),
-            transactionCurrency,
-            usdTryRateAtBuy:
+        ? (() => {
+            const transactionValueNumber = Number.parseFloat(transactionValue)
+            const buyAmountReceivedNumber = Number.parseFloat(buyAmountReceived)
+            const buyPricePerUnitNumber = Number.parseFloat(buyPricePerUnit)
+            const usdTryRateAtBuyNumber =
               transactionCurrency === 'USD' && buyUsdTryRateAtBuy
                 ? Number.parseFloat(buyUsdTryRateAtBuy)
-                : undefined,
-            occurredAt: occurredAtIso,
-            amountReceived: Number.parseFloat(buyAmountReceived),
-            commissionPercent: (() => {
-              if (!buyFee) return undefined
-              const feeValue = Number.parseFloat(buyFee)
-              if (!Number.isFinite(feeValue)) return Number.NaN
-              if (buyFeeUnit === 'percent') return feeValue
+                : undefined
+            const buyFeeNumber = buyFee ? Number.parseFloat(buyFee) : undefined
+            const totalTrySpent =
+              transactionCurrency === 'TRY'
+                ? transactionValueNumber
+                : transactionCurrency === 'USD' && usdTryRateAtBuyNumber
+                  ? transactionValueNumber * usdTryRateAtBuyNumber
+                  : Number.NaN
 
-              const receivedUsdt = Number.parseFloat(buyAmountReceived)
-              if (!Number.isFinite(receivedUsdt) || receivedUsdt <= 0) return Number.NaN
-              return (feeValue / (receivedUsdt + feeValue)) * 100
-            })(),
-          }
+            const grossBoughtUsdt =
+              buyInputMode === 'price-per-unit' &&
+              Number.isFinite(buyPricePerUnitNumber) &&
+              buyPricePerUnitNumber > 0 &&
+              Number.isFinite(totalTrySpent)
+                ? totalTrySpent / buyPricePerUnitNumber
+                : Number.NaN
+
+            const normalizedBuyAmountReceived =
+              buyInputMode === 'amount-received'
+                ? buyAmountReceivedNumber
+                : Number.isFinite(grossBoughtUsdt)
+                  ? buyFeeUnit === 'percent'
+                    ? buyFeeNumber !== undefined
+                      ? grossBoughtUsdt * (1 - buyFeeNumber / 100)
+                      : grossBoughtUsdt
+                    : buyFeeNumber !== undefined
+                      ? grossBoughtUsdt - buyFeeNumber
+                      : grossBoughtUsdt
+                  : Number.NaN
+
+            const buyCommissionPercent = (() => {
+              if (buyFeeNumber === undefined) return undefined
+              if (!Number.isFinite(buyFeeNumber)) return Number.NaN
+              if (buyFeeUnit === 'percent') return buyFeeNumber
+
+              if (buyInputMode === 'price-per-unit' && Number.isFinite(grossBoughtUsdt)) {
+                if (!Number.isFinite(grossBoughtUsdt) || grossBoughtUsdt <= 0) return Number.NaN
+                return (buyFeeNumber / grossBoughtUsdt) * 100
+              }
+
+              const receivedUsdt = buyAmountReceivedNumber
+              if (!Number.isFinite(receivedUsdt)) return Number.NaN
+              const grossUsdt = receivedUsdt + buyFeeNumber
+              if (!Number.isFinite(grossUsdt) || grossUsdt <= 0) return Number.NaN
+              return (buyFeeNumber / grossUsdt) * 100
+            })()
+
+            return {
+              cycle: effectiveCycle,
+              type: 'BUY' as const,
+              transactionValue: transactionValueNumber,
+              transactionCurrency,
+              usdTryRateAtBuy: usdTryRateAtBuyNumber,
+              occurredAt: occurredAtIso,
+              amountReceived: normalizedBuyAmountReceived,
+              commissionPercent: buyCommissionPercent,
+            }
+          })()
         : {
             cycle: effectiveCycle,
             type: 'SELL' as const,
@@ -368,8 +416,19 @@ const TradebookPage = () => {
         return
       }
       if (!Number.isFinite(payload.amountReceived) || payload.amountReceived <= 0) {
-        setErrorMessage('Amount received must be greater than 0')
+        if (buyInputMode === 'price-per-unit') {
+          setErrorMessage('Price per unit and fee produce an invalid received amount')
+        } else {
+          setErrorMessage('Amount received must be greater than 0')
+        }
         return
+      }
+      if (buyInputMode === 'price-per-unit') {
+        const buyPricePerUnitValue = Number.parseFloat(buyPricePerUnit)
+        if (!Number.isFinite(buyPricePerUnitValue) || buyPricePerUnitValue <= 0) {
+          setErrorMessage('Price per unit must be greater than 0')
+          return
+        }
       }
       if (payload.transactionCurrency === 'USD') {
         if (!payload.usdTryRateAtBuy) {
@@ -1037,15 +1096,6 @@ const TradebookPage = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <p className="mb-2 text-sm font-semibold">Datetime</p>
-                      <Input
-                        type="datetime-local"
-                        value={occurredAt}
-                        onChange={(event) => setOccurredAt(event.target.value)}
-                      />
-                    </div>
-
                     {transactionType === 'BUY' ? (
                       <>
                         <div>
@@ -1057,6 +1107,27 @@ const TradebookPage = () => {
                               <span className="text-muted-foreground text-sm">
                                 {CURRENCY_SYMBOLS[transactionCurrency]}
                               </span>
+                            }
+                            endAction={
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                  if (buyInputMode === 'amount-received') {
+                                    setBuyInputMode('price-per-unit')
+                                    setBuyAmountReceived('')
+                                  } else {
+                                    setBuyInputMode('amount-received')
+                                    setBuyPricePerUnit('')
+                                  }
+                                }}
+                              >
+                                {buyInputMode === 'amount-received'
+                                  ? 'Price per unit'
+                                  : 'Amount received'}
+                              </Button>
                             }
                           />
                         </div>
@@ -1080,16 +1151,41 @@ const TradebookPage = () => {
                         </div>
 
                         <div>
-                          <p className="mb-2 text-sm font-semibold">Amount received (USDT)</p>
-                          <NumberInput
-                            value={buyAmountReceived}
-                            onChange={setBuyAmountReceived}
-                            startAction={
-                              <span className="text-muted-foreground text-sm">
-                                {CURRENCY_SYMBOLS.USDT}
-                              </span>
-                            }
+                          <p className="mb-2 text-sm font-semibold">Datetime</p>
+                          <Input
+                            type="datetime-local"
+                            value={occurredAt}
+                            onChange={(event) => setOccurredAt(event.target.value)}
                           />
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-sm font-semibold">
+                            {buyInputMode === 'amount-received'
+                              ? 'Amount received (USDT)'
+                              : 'Price per unit (TRY)'}
+                          </p>
+                          {buyInputMode === 'amount-received' ? (
+                            <NumberInput
+                              value={buyAmountReceived}
+                              onChange={setBuyAmountReceived}
+                              startAction={
+                                <span className="text-muted-foreground text-sm">
+                                  {CURRENCY_SYMBOLS.USDT}
+                                </span>
+                              }
+                            />
+                          ) : (
+                            <NumberInput
+                              value={buyPricePerUnit}
+                              onChange={setBuyPricePerUnit}
+                              startAction={
+                                <span className="text-muted-foreground text-sm">
+                                  {CURRENCY_SYMBOLS.TRY}
+                                </span>
+                              }
+                            />
+                          )}
                         </div>
 
                         <div>
@@ -1133,6 +1229,15 @@ const TradebookPage = () => {
                       </>
                     ) : (
                       <>
+                        <div>
+                          <p className="mb-2 text-sm font-semibold">Datetime</p>
+                          <Input
+                            type="datetime-local"
+                            value={occurredAt}
+                            onChange={(event) => setOccurredAt(event.target.value)}
+                          />
+                        </div>
+
                         <div>
                           <p className="mb-2 text-sm font-semibold">Amount sold (USDT)</p>
                           <NumberInput
