@@ -37,6 +37,7 @@ type TransactionType = 'BUY' | 'SELL'
 type TransactionCurrency = 'USD' | 'TRY'
 type SellInputMode = 'amount-received' | 'price-per-unit'
 type SellFeeUnit = 'percent' | 'usdt'
+type BuyFeeUnit = 'percent' | 'usdt'
 type PendingCycleAction = 'undo-last' | 'reset-cycle' | 'delete-cycle' | null
 
 type TradeCycle = {
@@ -187,6 +188,8 @@ const TradebookPage = () => {
   const [transactionValue, setTransactionValue] = useState('')
   const [buyAmountReceived, setBuyAmountReceived] = useState('')
   const [buyUsdTryRateAtBuy, setBuyUsdTryRateAtBuy] = useState('')
+  const [buyFee, setBuyFee] = useState('')
+  const [buyFeeUnit, setBuyFeeUnit] = useState<BuyFeeUnit>('usdt')
   const [sellAmountSold, setSellAmountSold] = useState('')
   const [sellAmountReceived, setSellAmountReceived] = useState('')
   const [sellPricePerUnit, setSellPricePerUnit] = useState('')
@@ -280,6 +283,8 @@ const TradebookPage = () => {
     setTransactionValue('')
     setBuyAmountReceived('')
     setBuyUsdTryRateAtBuy('')
+    setBuyFee('')
+    setBuyFeeUnit('usdt')
     setSellAmountSold('')
     setSellAmountReceived('')
     setSellPricePerUnit('')
@@ -319,6 +324,16 @@ const TradebookPage = () => {
                 : undefined,
             occurredAt: occurredAtIso,
             amountReceived: Number.parseFloat(buyAmountReceived),
+            commissionPercent: (() => {
+              if (!buyFee) return undefined
+              const feeValue = Number.parseFloat(buyFee)
+              if (!Number.isFinite(feeValue)) return Number.NaN
+              if (buyFeeUnit === 'percent') return feeValue
+
+              const receivedUsdt = Number.parseFloat(buyAmountReceived)
+              if (!Number.isFinite(receivedUsdt) || receivedUsdt <= 0) return Number.NaN
+              return (feeValue / receivedUsdt) * 100
+            })(),
           }
         : {
             cycle: effectiveCycle,
@@ -364,6 +379,13 @@ const TradebookPage = () => {
           setErrorMessage('USD/TRY rate at buy must be greater than 0')
           return
         }
+      }
+      if (
+        payload.commissionPercent !== undefined &&
+        (!Number.isFinite(payload.commissionPercent) || payload.commissionPercent < 0)
+      ) {
+        setErrorMessage('Fee must be 0 or greater')
+        return
       }
     } else {
       if (!Number.isFinite(payload.amountSold) || payload.amountSold <= 0) {
@@ -1063,6 +1085,30 @@ const TradebookPage = () => {
                               <span className="text-muted-foreground text-sm">
                                 {CURRENCY_SYMBOLS.USDT}
                               </span>
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-sm font-semibold">
+                            Fee ({buyFeeUnit === 'percent' ? '%' : CURRENCY_SYMBOLS.USDT})
+                          </p>
+                          <NumberInput
+                            value={buyFee}
+                            onChange={setBuyFee}
+                            placeholder="0.00"
+                            endAction={
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 min-w-9 px-2 text-xs"
+                                onClick={() =>
+                                  setBuyFeeUnit((prev) => (prev === 'percent' ? 'usdt' : 'percent'))
+                                }
+                              >
+                                {buyFeeUnit === 'percent' ? '%' : CURRENCY_SYMBOLS.USDT}
+                              </Button>
                             }
                           />
                         </div>

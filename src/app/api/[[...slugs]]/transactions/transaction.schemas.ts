@@ -12,6 +12,7 @@ export const createBuyTransactionBodySchema = t.Object({
   usdTryRateAtBuy: t.Optional(t.Number({ minimum: 0.0000001 })),
   occurredAt: t.Optional(t.String({ format: 'date-time' })),
   amountReceived: t.Number({ minimum: 0.0000001 }),
+  commissionPercent: t.Optional(t.Number({ minimum: 0 })),
 })
 
 export const createSellTransactionBodySchema = t.Object({

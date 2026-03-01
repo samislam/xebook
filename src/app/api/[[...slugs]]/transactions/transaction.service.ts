@@ -9,6 +9,7 @@ type BuyInput = {
   usdTryRateAtBuy?: number
   occurredAt?: string
   amountReceived: number
+  commissionPercent?: number
 }
 
 type SellInput = {
@@ -204,9 +205,11 @@ export class TransactionService {
             : null
 
       const commissionPercent =
-        input.transactionCurrency === 'USD'
-          ? ((input.transactionValue - input.amountReceived) / input.transactionValue) * 100
-          : null
+        input.commissionPercent !== undefined
+          ? input.commissionPercent
+          : input.transactionCurrency === 'USD'
+            ? ((input.transactionValue - input.amountReceived) / input.transactionValue) * 100
+            : null
 
       const row = await prismaClient.tradeTransaction.create({
         data: {
