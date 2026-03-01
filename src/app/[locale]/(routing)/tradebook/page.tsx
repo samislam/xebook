@@ -1427,13 +1427,31 @@ const TradebookPage = () => {
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="space-y-3">
-            <div className="rounded-lg border border-emerald-500/50 bg-emerald-500/10 p-4">
-              <p className="flex items-center gap-1 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+            <div
+              className={
+                stats.currentUsdtBalance >= 0
+                  ? 'rounded-lg border border-emerald-500/50 bg-emerald-500/10 p-4'
+                  : 'rounded-lg border border-red-500/50 bg-red-500/10 p-4'
+              }
+            >
+              <p
+                className={
+                  stats.currentUsdtBalance >= 0
+                    ? 'flex items-center gap-1 text-sm font-semibold text-emerald-700 dark:text-emerald-300'
+                    : 'flex items-center gap-1 text-sm font-semibold text-red-700 dark:text-red-300'
+                }
+              >
                 Current USDT
                 <Image src={usdtIcon} alt="USDT" width={14} height={14} />
                 balance
               </p>
-              <p className="mt-2 text-3xl font-bold text-emerald-700 dark:text-emerald-300">
+              <p
+                className={
+                  stats.currentUsdtBalance >= 0
+                    ? 'mt-2 text-3xl font-bold text-emerald-700 dark:text-emerald-300'
+                    : 'mt-2 text-3xl font-bold text-red-700 dark:text-red-300'
+                }
+              >
                 {formatUsdt(stats.currentUsdtBalance)}
               </p>
             </div>
