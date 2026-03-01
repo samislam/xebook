@@ -1239,117 +1239,121 @@ const TradebookPage = () => {
                       </>
                     ) : (
                       <>
-                        <div>
-                          <p className="mb-2 text-sm font-semibold">Amount sold (USDT)</p>
-                          <NumberInput
-                            value={sellAmountSold}
-                            onChange={setSellAmountSold}
-                            startAction={
-                              <span className="text-muted-foreground text-sm">
-                                {CURRENCY_SYMBOLS.USDT}
-                              </span>
-                            }
-                            endAction={
-                              <button
-                                type="button"
-                                className="text-muted-foreground hover:text-foreground text-xs font-semibold"
-                                onClick={() => {
-                                  const maxValue = availableCycleUsdtBalance
-                                    .toFixed(4)
-                                    .replace(/\.?0+$/, '')
-                                  setSellAmountSold(maxValue)
-                                }}
-                              >
-                                MAX
-                              </button>
-                            }
-                          />
-                          <p className="text-muted-foreground mt-1 text-xs">
-                            Available USDT balance: {formatUsdt(availableCycleUsdtBalance)} USDT
-                          </p>
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <p className="mb-2 text-sm font-semibold">
-                            {sellInputMode === 'amount-received'
-                              ? 'Amount received (TRY)'
-                              : 'Price per unit (TRY)'}
-                          </p>
-                          {sellInputMode === 'amount-received' ? (
-                            <NumberInput
-                              value={sellAmountReceived}
-                              onChange={setSellAmountReceived}
-                              startAction={
-                                <span className="text-muted-foreground text-sm">
-                                  {CURRENCY_SYMBOLS.TRY}
-                                </span>
+                        <div className="md:col-span-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3">
+                          <div className="mb-3 flex items-center justify-between gap-2">
+                            <p className="text-muted-foreground text-xs font-semibold uppercase">
+                              Sell Details
+                            </p>
+                            <ButtonWithTooltip
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 min-w-12 px-2 text-xs"
+                              tooltipText={
+                                sellInputMode === 'amount-received'
+                                  ? 'Amount received mode'
+                                  : 'Price per unit mode'
                               }
-                              endAction={
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 px-2 text-xs"
-                                  onClick={() => {
-                                    setSellInputMode('price-per-unit')
-                                    setSellAmountReceived('')
-                                  }}
-                                >
-                                  Price per unit
-                                </Button>
-                              }
-                            />
-                          ) : (
-                            <NumberInput
-                              value={sellPricePerUnit}
-                              onChange={setSellPricePerUnit}
-                              startAction={
-                                <span className="text-muted-foreground text-sm">
-                                  {CURRENCY_SYMBOLS.TRY}
-                                </span>
-                              }
-                              endAction={
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 px-2 text-xs"
-                                  onClick={() => {
-                                    setSellInputMode('amount-received')
-                                    setSellPricePerUnit('')
-                                  }}
-                                >
-                                  Amount received
-                                </Button>
-                              }
-                            />
-                          )}
-                        </div>
-
-                        <div>
-                          <p className="mb-2 text-sm font-semibold">
-                            Fee ({sellFeeUnit === 'percent' ? '%' : CURRENCY_SYMBOLS.USDT})
-                          </p>
-                          <NumberInput
-                            value={sellFee}
-                            onChange={setSellFee}
-                            placeholder="0.00"
-                            endAction={
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-7 min-w-9 px-2 text-xs"
-                                onClick={() =>
-                                  setSellFeeUnit((prev) =>
-                                    prev === 'percent' ? 'usdt' : 'percent'
-                                  )
+                              onClick={() => {
+                                if (sellInputMode === 'amount-received') {
+                                  setSellInputMode('price-per-unit')
+                                  setSellAmountReceived('')
+                                } else {
+                                  setSellInputMode('amount-received')
+                                  setSellPricePerUnit('')
                                 }
-                              >
-                                {sellFeeUnit === 'percent' ? '%' : CURRENCY_SYMBOLS.USDT}
-                              </Button>
-                            }
-                          />
+                              }}
+                            >
+                              {sellInputMode === 'amount-received' ? 'Mode: Amt' : 'Mode: PPU'}
+                            </ButtonWithTooltip>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                              <p className="mb-2 text-sm font-semibold">Amount sold (USDT)</p>
+                              <NumberInput
+                                value={sellAmountSold}
+                                onChange={setSellAmountSold}
+                                startAction={
+                                  <span className="text-muted-foreground text-sm">
+                                    {CURRENCY_SYMBOLS.USDT}
+                                  </span>
+                                }
+                                endAction={
+                                  <button
+                                    type="button"
+                                    className="text-muted-foreground hover:text-foreground text-xs font-semibold"
+                                    onClick={() => {
+                                      const maxValue = availableCycleUsdtBalance
+                                        .toFixed(4)
+                                        .replace(/\.?0+$/, '')
+                                      setSellAmountSold(maxValue)
+                                    }}
+                                  >
+                                    MAX
+                                  </button>
+                                }
+                              />
+                              <p className="text-muted-foreground mt-1 text-xs">
+                                Available USDT balance: {formatUsdt(availableCycleUsdtBalance)} USDT
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="mb-2 text-sm font-semibold">
+                                {sellInputMode === 'amount-received'
+                                  ? 'Amount received (TRY)'
+                                  : 'Price per unit (TRY)'}
+                              </p>
+                              {sellInputMode === 'amount-received' ? (
+                                <NumberInput
+                                  value={sellAmountReceived}
+                                  onChange={setSellAmountReceived}
+                                  startAction={
+                                    <span className="text-muted-foreground text-sm">
+                                      {CURRENCY_SYMBOLS.TRY}
+                                    </span>
+                                  }
+                                />
+                              ) : (
+                                <NumberInput
+                                  value={sellPricePerUnit}
+                                  onChange={setSellPricePerUnit}
+                                  startAction={
+                                    <span className="text-muted-foreground text-sm">
+                                      {CURRENCY_SYMBOLS.TRY}
+                                    </span>
+                                  }
+                                />
+                              )}
+                            </div>
+
+                            <div>
+                              <p className="mb-2 text-sm font-semibold">
+                                Fee ({sellFeeUnit === 'percent' ? '%' : CURRENCY_SYMBOLS.USDT})
+                              </p>
+                              <NumberInput
+                                value={sellFee}
+                                onChange={setSellFee}
+                                placeholder="0.00"
+                                endAction={
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 min-w-9 px-2 text-xs"
+                                    onClick={() =>
+                                      setSellFeeUnit((prev) =>
+                                        prev === 'percent' ? 'usdt' : 'percent'
+                                      )
+                                    }
+                                  >
+                                    {sellFeeUnit === 'percent' ? '%' : CURRENCY_SYMBOLS.USDT}
+                                  </Button>
+                                }
+                              />
+                            </div>
+                          </div>
                         </div>
 
                         <div>
