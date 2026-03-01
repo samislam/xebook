@@ -1,0 +1,29 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - development
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy_staging:
+    if: github.ref_name == 'development' && vars.STAGING_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy staging
+        run: bash bin/staging/deploy.dev.sh
+
+  deploy_production:
+    if: github.ref_name == 'main' && vars.PROD_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy production
+        run: bash bin/production/deploy.prod.sh
