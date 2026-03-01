@@ -2,6 +2,21 @@
 set -e
 export CI=true
 
+# ---- Load NVM manually for non-interactive SSH ----
+export NVM_DIR="$HOME/.nvm"
+
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+  nvm use v24 >/dev/null 2>&1
+else
+  echo "ERROR: nvm.sh not found at $NVM_DIR/nvm.sh"
+  exit 1
+fi
+
+# Ensure node binary is in PATH explicitly
+export PATH="$NVM_DIR/versions/node/$(nvm version)/bin:$PATH"
+# ---------------------------------------------------
+
 if [ -z "$REMOTE_PROJECT_DIR" ] || [ ! -d "$REMOTE_PROJECT_DIR" ]; then
   echo "Invalid or missing REMOTE_PROJECT_DIR: '$REMOTE_PROJECT_DIR'"
   exit 1
