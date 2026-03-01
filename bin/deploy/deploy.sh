@@ -34,4 +34,4 @@ echo "[DEPLOY] Environment file uploaded."
 
 echo "[DEPLOY] Running remote deployment script..."
 ssh "$REMOTE_USER@$REMOTE_HOST" \
-  "REMOTE_PROJECT_DIR='$REMOTE_PROJECT_DIR' DEPLOY_BRANCH='${DEPLOY_BRANCH:-main}' bash -s" < "$UPDATE_SCRIPT"
+  "REMOTE_PROJECT_DIR='$REMOTE_PROJECT_DIR' DEPLOY_BRANCH='${DEPLOY_BRANCH:-main}' /bin/bash -s" < "$UPDATE_SCRIPT"
