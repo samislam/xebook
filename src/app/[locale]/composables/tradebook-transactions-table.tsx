@@ -7,7 +7,12 @@ export type TradebookRow = {
   id: string
   cycle: string
   occurredAt: string
-  type: 'BUY' | 'SELL' | 'CYCLE_SETTLEMENT'
+  type:
+    | 'BUY'
+    | 'SELL'
+    | 'CYCLE_SETTLEMENT'
+    | 'DEPOSIT_BALANCE_CORRECTION'
+    | 'WITHDRAW_BALANCE_CORRECTION'
   paidLabel: string
   receivedLabel: string
   unitPriceTry: number | null
@@ -21,6 +26,7 @@ type TradebookTransactionsTableProps = {
   rows: TradebookRow[]
   initialRows?: number
   showCycleColumn?: boolean
+  onRowClick?: (transactionId: string) => void
 }
 
 const truncateToTwoDecimals = (value: number) => Math.trunc(value * 100) / 100
@@ -78,6 +84,7 @@ export const TradebookTransactionsTable = ({
   rows,
   initialRows = 0,
   showCycleColumn = true,
+  onRowClick,
 }: TradebookTransactionsTableProps) => {
   const emptyRowsCount = Math.max(0, initialRows - rows.length)
 
@@ -115,7 +122,13 @@ export const TradebookTransactionsTable = ({
 
         <tbody>
           {rows.map((row) => (
-            <tr key={row.id} className="border-t border-black/5 dark:border-white/10">
+            <tr
+              key={row.id}
+              className={`border-t border-black/5 dark:border-white/10 ${
+                onRowClick ? 'cursor-pointer hover:bg-black/5 dark:hover:bg-white/5' : ''
+              }`}
+              onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+            >
               <td className="border-border border-r px-3 py-2">{row.no}</td>
               <td className="px-3 py-2">{formatDateTime(row.occurredAt)}</td>
               {showCycleColumn && <td className="px-3 py-2">{row.cycle}</td>}
@@ -126,10 +139,20 @@ export const TradebookTransactionsTable = ({
                       ? 'inline-flex rounded bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                       : row.type === 'SELL'
                         ? 'inline-flex rounded bg-blue-100 px-2 py-0.5 font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                        : 'inline-flex rounded bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                        : row.type === 'CYCLE_SETTLEMENT'
+                          ? 'inline-flex rounded bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                          : row.type === 'DEPOSIT_BALANCE_CORRECTION'
+                            ? 'inline-flex rounded bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                            : 'inline-flex rounded bg-rose-100 px-2 py-0.5 font-semibold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
                   }
                 >
-                  {row.type === 'CYCLE_SETTLEMENT' ? 'SETTLEMENT' : row.type}
+                  {row.type === 'CYCLE_SETTLEMENT'
+                    ? 'SETTLEMENT'
+                    : row.type === 'DEPOSIT_BALANCE_CORRECTION'
+                      ? 'DEPOSIT CORR.'
+                      : row.type === 'WITHDRAW_BALANCE_CORRECTION'
+                        ? 'WITHDRAW CORR.'
+                        : row.type}
                 </span>
               </td>
               <td className={signedCellClassName(row.paidLabel)}>

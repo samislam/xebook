@@ -30,7 +30,26 @@ type CycleSettlementInput = {
   amount: number
 }
 
-type CreateTransactionInput = BuyInput | SellInput | CycleSettlementInput
+type DepositBalanceCorrectionInput = {
+  cycle: string
+  type: 'DEPOSIT_BALANCE_CORRECTION'
+  occurredAt?: string
+  amount: number
+}
+
+type WithdrawBalanceCorrectionInput = {
+  cycle: string
+  type: 'WITHDRAW_BALANCE_CORRECTION'
+  occurredAt?: string
+  amount: number
+}
+
+type CreateTransactionInput =
+  | BuyInput
+  | SellInput
+  | CycleSettlementInput
+  | DepositBalanceCorrectionInput
+  | WithdrawBalanceCorrectionInput
 
 const decimalToNumber = (value: Prisma.Decimal | null | undefined) =>
   value === null || value === undefined ? null : Number(value)
@@ -38,7 +57,12 @@ const decimalToNumber = (value: Prisma.Decimal | null | undefined) =>
 const toPlainTransaction = (row: {
   id: string
   cycle: { name: string }
-  type: 'BUY' | 'SELL' | 'CYCLE_SETTLEMENT'
+  type:
+    | 'BUY'
+    | 'SELL'
+    | 'CYCLE_SETTLEMENT'
+    | 'DEPOSIT_BALANCE_CORRECTION'
+    | 'WITHDRAW_BALANCE_CORRECTION'
   occurredAt: Date
   createdAt: Date
   updatedAt: Date
@@ -272,6 +296,60 @@ export class TransactionService {
       ])
 
       return [toPlainTransaction(fromRow), toPlainTransaction(toRow)]
+    }
+
+    if (
+      input.type === 'DEPOSIT_BALANCE_CORRECTION' ||
+      input.type === 'WITHDRAW_BALANCE_CORRECTION'
+    ) {
+      const amount = input.amount
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('Correction amount must be greater than 0')
+      }
+
+      const cycleName = input.cycle.trim()
+      const cycle = await prismaClient.tradeCycle.upsert({
+        where: { name: cycleName },
+        create: { name: cycleName },
+        update: {},
+      })
+
+      if (input.type === 'WITHDRAW_BALANCE_CORRECTION') {
+        const cycleRows = await prismaClient.tradeTransaction.findMany({
+          where: { cycleId: cycle.id },
+          select: {
+            type: true,
+            amountReceived: true,
+            amountSold: true,
+          },
+        })
+
+        const cycleBalance = cycleRows.reduce((sum, row) => {
+          if (row.type === 'BUY') return sum + Number(row.amountReceived)
+          if (row.type === 'SELL') return sum - Number(row.amountSold ?? 0)
+          return sum + Number(row.amountReceived) - Number(row.amountSold ?? 0)
+        }, 0)
+
+        if (amount > cycleBalance + Number.EPSILON) {
+          throw new Error(
+            `Withdraw correction amount (${amount.toFixed(4)}) exceeds cycle balance (${cycleBalance.toFixed(4)})`
+          )
+        }
+      }
+
+      const row = await prismaClient.tradeTransaction.create({
+        data: {
+          cycleId: cycle.id,
+          type: input.type,
+          occurredAt,
+          amountReceived: input.type === 'DEPOSIT_BALANCE_CORRECTION' ? amount : 0,
+          amountSold: input.type === 'WITHDRAW_BALANCE_CORRECTION' ? amount : null,
+          receivedCurrency: 'TRY',
+        },
+        include: { cycle: true },
+      })
+
+      return toPlainTransaction(row)
     }
 
     const cycleName = input.cycle.trim()

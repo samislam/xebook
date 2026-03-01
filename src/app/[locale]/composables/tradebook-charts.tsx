@@ -15,7 +15,12 @@ import {
   YAxis,
 } from 'recharts'
 
-type TransactionType = 'BUY' | 'SELL' | 'CYCLE_SETTLEMENT'
+type TransactionType =
+  | 'BUY'
+  | 'SELL'
+  | 'CYCLE_SETTLEMENT'
+  | 'DEPOSIT_BALANCE_CORRECTION'
+  | 'WITHDRAW_BALANCE_CORRECTION'
 type TransactionCurrency = 'USD' | 'TRY'
 
 type TradeTransaction = {

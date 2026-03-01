@@ -19,6 +19,8 @@ enum TransactionType {
   BUY
   SELL
   CYCLE_SETTLEMENT
+  DEPOSIT_BALANCE_CORRECTION
+  WITHDRAW_BALANCE_CORRECTION
 }
 
 enum TransactionCurrency {

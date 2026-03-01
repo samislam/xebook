@@ -34,7 +34,12 @@ import { TradebookCharts } from '../../composables/tradebook-charts'
 import { LogoutIconButton } from '@/components/common/logout-icon-button'
 import { TradebookTransactionsTable } from '../../composables/tradebook-transactions-table'
 
-type TransactionType = 'BUY' | 'SELL' | 'CYCLE_SETTLEMENT'
+type TransactionType =
+  | 'BUY'
+  | 'SELL'
+  | 'CYCLE_SETTLEMENT'
+  | 'DEPOSIT_BALANCE_CORRECTION'
+  | 'WITHDRAW_BALANCE_CORRECTION'
 type TransactionCurrency = 'USD' | 'TRY'
 type BuyInputMode = 'amount-received' | 'price-per-unit'
 type SellInputMode = 'amount-received' | 'price-per-unit'
@@ -169,6 +174,7 @@ const calculateRealizedTryProfit = (transactions: TradeTransaction[]) => {
 const TradebookPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isCycleDialogOpen, setIsCycleDialogOpen] = useState(false)
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null)
   const [transactions, setTransactions] = useState<TradeTransaction[]>([])
   const [cycles, setCycles] = useState<TradeCycle[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -203,6 +209,7 @@ const TradebookPage = () => {
   const [sellInputMode, setSellInputMode] = useState<SellInputMode>('price-per-unit')
   const [settlementToCycle, setSettlementToCycle] = useState('')
   const [settlementAmount, setSettlementAmount] = useState('')
+  const [correctionAmount, setCorrectionAmount] = useState('')
   const [newCycleName, setNewCycleName] = useState('')
   const [cycleSearchTerm, setCycleSearchTerm] = useState('')
   const [isCycleComboboxOpen, setIsCycleComboboxOpen] = useState(false)
@@ -303,6 +310,7 @@ const TradebookPage = () => {
     setSellInputMode('price-per-unit')
     setSettlementToCycle('')
     setSettlementAmount('')
+    setCorrectionAmount('')
   }
 
   const createTransaction = async () => {
@@ -416,13 +424,23 @@ const TradebookPage = () => {
                 return (feeValue / soldUsdt) * 100
               })(),
             }
-          : {
-              type: 'CYCLE_SETTLEMENT' as const,
-              occurredAt: occurredAtIso,
-              fromCycle: effectiveCycle,
-              toCycle: settlementToCycle.trim(),
-              amount: Number.parseFloat(settlementAmount),
-            }
+          : transactionType === 'CYCLE_SETTLEMENT'
+            ? {
+                type: 'CYCLE_SETTLEMENT' as const,
+                occurredAt: occurredAtIso,
+                fromCycle: effectiveCycle,
+                toCycle: settlementToCycle.trim(),
+                amount: Number.parseFloat(settlementAmount),
+              }
+            : {
+                cycle: effectiveCycle,
+                type:
+                  transactionType === 'DEPOSIT_BALANCE_CORRECTION'
+                    ? ('DEPOSIT_BALANCE_CORRECTION' as const)
+                    : ('WITHDRAW_BALANCE_CORRECTION' as const),
+                occurredAt: occurredAtIso,
+                amount: Number.parseFloat(correctionAmount),
+              }
 
     if (payload.type === 'BUY') {
       if (!Number.isFinite(payload.transactionValue) || payload.transactionValue <= 0) {
@@ -497,7 +515,7 @@ const TradebookPage = () => {
         setErrorMessage('Fee must be 0 or greater')
         return
       }
-    } else {
+    } else if (payload.type === 'CYCLE_SETTLEMENT') {
       if (!payload.fromCycle) {
         setErrorMessage('Source cycle is required')
         return
@@ -524,6 +542,24 @@ const TradebookPage = () => {
           `Settlement amount exceeds source cycle balance (${formatUsdt(sourceBalance)} USDT)`
         )
         return
+      }
+    } else {
+      if (!payload.cycle) {
+        setErrorMessage('Cycle is required')
+        return
+      }
+      if (!Number.isFinite(payload.amount) || payload.amount <= 0) {
+        setErrorMessage('Correction amount must be greater than 0')
+        return
+      }
+      if (payload.type === 'WITHDRAW_BALANCE_CORRECTION') {
+        const cycleBalance = Math.max(0, getCycleUsdtBalance(payload.cycle))
+        if (payload.amount > cycleBalance + Number.EPSILON) {
+          setErrorMessage(
+            `Withdraw correction exceeds cycle balance (${formatUsdt(cycleBalance)} USDT)`
+          )
+          return
+        }
       }
     }
 
@@ -827,6 +863,11 @@ const TradebookPage = () => {
     return transactions.filter((transaction) => transaction.cycle === selectedCycle)
   }, [transactions, selectedCycle])
 
+  const selectedTransaction = useMemo(
+    () => transactions.find((transaction) => transaction.id === selectedTransactionId) ?? null,
+    [transactions, selectedTransactionId]
+  )
+
   const ledgerRows = useMemo(() => {
     const ordered = [...filteredTransactions].sort(
       (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
@@ -884,26 +925,65 @@ const TradebookPage = () => {
         }
       }
 
-      const settlementOut = transaction.amountSold ?? 0
-      const settlementIn = transaction.amountReceived
-      const usdtDelta = settlementIn - settlementOut
-      const tryDelta = 0
-      runningUsdt += usdtDelta
+      if (transaction.type === 'CYCLE_SETTLEMENT') {
+        const settlementOut = transaction.amountSold ?? 0
+        const settlementIn = transaction.amountReceived
+        const usdtDelta = settlementIn - settlementOut
+        const tryDelta = 0
+        runningUsdt += usdtDelta
 
+        return {
+          no: index + 1,
+          id: transaction.id,
+          cycle: transaction.cycle,
+          occurredAt: transaction.occurredAt,
+          type: 'CYCLE_SETTLEMENT' as const,
+          paidLabel:
+            settlementOut > 0 ? `-${CURRENCY_SYMBOLS.USDT} ${formatUsdt(settlementOut)}` : '-',
+          receivedLabel:
+            settlementIn > 0 ? `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(settlementIn)}` : '-',
+          unitPriceTry: null,
+          commissionPercent: null,
+          usdtDelta,
+          tryDelta,
+          runningUsdtBalance: runningUsdt,
+        }
+      }
+
+      if (transaction.type === 'DEPOSIT_BALANCE_CORRECTION') {
+        const usdtDelta = transaction.amountReceived
+        runningUsdt += usdtDelta
+        return {
+          no: index + 1,
+          id: transaction.id,
+          cycle: transaction.cycle,
+          occurredAt: transaction.occurredAt,
+          type: 'DEPOSIT_BALANCE_CORRECTION' as const,
+          paidLabel: '-',
+          receivedLabel: `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(transaction.amountReceived)}`,
+          unitPriceTry: null,
+          commissionPercent: null,
+          usdtDelta,
+          tryDelta: 0,
+          runningUsdtBalance: runningUsdt,
+        }
+      }
+
+      const withdrawnUsdt = transaction.amountSold ?? 0
+      const usdtDelta = -withdrawnUsdt
+      runningUsdt += usdtDelta
       return {
         no: index + 1,
         id: transaction.id,
         cycle: transaction.cycle,
         occurredAt: transaction.occurredAt,
-        type: 'CYCLE_SETTLEMENT' as const,
-        paidLabel:
-          settlementOut > 0 ? `-${CURRENCY_SYMBOLS.USDT} ${formatUsdt(settlementOut)}` : '-',
-        receivedLabel:
-          settlementIn > 0 ? `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(settlementIn)}` : '-',
+        type: 'WITHDRAW_BALANCE_CORRECTION' as const,
+        paidLabel: `-${CURRENCY_SYMBOLS.USDT} ${formatUsdt(withdrawnUsdt)}`,
+        receivedLabel: '-',
         unitPriceTry: null,
         commissionPercent: null,
         usdtDelta,
-        tryDelta,
+        tryDelta: 0,
         runningUsdtBalance: runningUsdt,
       }
     })
@@ -1086,6 +1166,12 @@ const TradebookPage = () => {
                           <SelectItem value="BUY">BUY</SelectItem>
                           <SelectItem value="SELL">SELL</SelectItem>
                           <SelectItem value="CYCLE_SETTLEMENT">Cycle Settlement</SelectItem>
+                          <SelectItem value="DEPOSIT_BALANCE_CORRECTION">
+                            Deposit Balance Correction
+                          </SelectItem>
+                          <SelectItem value="WITHDRAW_BALANCE_CORRECTION">
+                            Withdraw Balance Correction
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1442,7 +1528,7 @@ const TradebookPage = () => {
                           />
                         </div>
                       </>
-                    ) : (
+                    ) : transactionType === 'CYCLE_SETTLEMENT' ? (
                       <>
                         <div>
                           <p className="mb-2 text-sm font-semibold">Destination cycle</p>
@@ -1489,6 +1575,49 @@ const TradebookPage = () => {
                           />
                           <p className="text-muted-foreground mt-1 text-xs">
                             Source cycle balance: {formatUsdt(availableCycleUsdtBalance)} USDT
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-sm font-semibold">Datetime</p>
+                          <Input
+                            type="datetime-local"
+                            value={occurredAt}
+                            onChange={(event) => setOccurredAt(event.target.value)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <p className="mb-2 text-sm font-semibold">Correction amount (USDT)</p>
+                          <NumberInput
+                            value={correctionAmount}
+                            onChange={setCorrectionAmount}
+                            startAction={
+                              <span className="text-muted-foreground text-sm">
+                                {CURRENCY_SYMBOLS.USDT}
+                              </span>
+                            }
+                            endAction={
+                              transactionType === 'WITHDRAW_BALANCE_CORRECTION' ? (
+                                <button
+                                  type="button"
+                                  className="text-muted-foreground hover:text-foreground text-xs font-semibold"
+                                  onClick={() => {
+                                    const maxValue = availableCycleUsdtBalance
+                                      .toFixed(4)
+                                      .replace(/\.?0+$/, '')
+                                    setCorrectionAmount(maxValue)
+                                  }}
+                                >
+                                  MAX
+                                </button>
+                              ) : undefined
+                            }
+                          />
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            Cycle balance: {formatUsdt(availableCycleUsdtBalance)} USDT
                           </p>
                         </div>
 
@@ -1795,6 +1924,7 @@ const TradebookPage = () => {
                   rows={ledgerRows}
                   initialRows={10}
                   showCycleColumn={!selectedCycle}
+                  onRowClick={setSelectedTransactionId}
                 />
                 <TradebookCharts transactions={filteredTransactions} />
               </>
@@ -1802,6 +1932,100 @@ const TradebookPage = () => {
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={selectedTransaction !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTransactionId(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Transaction details</DialogTitle>
+            <DialogDescription>Full information for the selected transaction.</DialogDescription>
+          </DialogHeader>
+
+          {selectedTransaction && (
+            <div className="grid grid-cols-1 gap-2 text-sm">
+              <p>
+                <span className="font-semibold">ID:</span> {selectedTransaction.id}
+              </p>
+              <p>
+                <span className="font-semibold">Cycle:</span> {selectedTransaction.cycle}
+              </p>
+              <p>
+                <span className="font-semibold">Type:</span> {selectedTransaction.type}
+              </p>
+              <p>
+                <span className="font-semibold">Occurred at:</span>{' '}
+                {new Date(selectedTransaction.occurredAt).toLocaleString('en-US')}
+              </p>
+              <p>
+                <span className="font-semibold">Created at:</span>{' '}
+                {new Date(selectedTransaction.createdAt).toLocaleString('en-US')}
+              </p>
+              <p>
+                <span className="font-semibold">Updated at:</span>{' '}
+                {new Date(selectedTransaction.updatedAt).toLocaleString('en-US')}
+              </p>
+              <p>
+                <span className="font-semibold">Transaction value:</span>{' '}
+                {selectedTransaction.transactionValue === null
+                  ? '-'
+                  : formatAmount(selectedTransaction.transactionValue)}
+              </p>
+              <p>
+                <span className="font-semibold">Transaction currency:</span>{' '}
+                {selectedTransaction.transactionCurrency ?? '-'}
+              </p>
+              <p>
+                <span className="font-semibold">USD/TRY rate at buy:</span>{' '}
+                {selectedTransaction.usdTryRateAtBuy === null
+                  ? '-'
+                  : formatAmount(selectedTransaction.usdTryRateAtBuy)}
+              </p>
+              <p>
+                <span className="font-semibold">Amount received:</span>{' '}
+                {formatAmount(selectedTransaction.amountReceived)}
+              </p>
+              <p>
+                <span className="font-semibold">Amount sold:</span>{' '}
+                {selectedTransaction.amountSold === null
+                  ? '-'
+                  : formatAmount(selectedTransaction.amountSold)}
+              </p>
+              <p>
+                <span className="font-semibold">Price per unit:</span>{' '}
+                {selectedTransaction.pricePerUnit === null
+                  ? '-'
+                  : formatAmount(selectedTransaction.pricePerUnit)}
+              </p>
+              <p>
+                <span className="font-semibold">Received currency:</span>{' '}
+                {selectedTransaction.receivedCurrency}
+              </p>
+              <p>
+                <span className="font-semibold">Commission percent:</span>{' '}
+                {selectedTransaction.commissionPercent === null
+                  ? '-'
+                  : `${formatAmount(selectedTransaction.commissionPercent)}%`}
+              </p>
+              <p>
+                <span className="font-semibold">Effective rate TRY:</span>{' '}
+                {selectedTransaction.effectiveRateTry === null
+                  ? '-'
+                  : formatAmount(selectedTransaction.effectiveRateTry)}
+              </p>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setSelectedTransactionId(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

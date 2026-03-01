@@ -4,6 +4,8 @@ export const transactionTypeSchema = t.Union([
   t.Literal('BUY'),
   t.Literal('SELL'),
   t.Literal('CYCLE_SETTLEMENT'),
+  t.Literal('DEPOSIT_BALANCE_CORRECTION'),
+  t.Literal('WITHDRAW_BALANCE_CORRECTION'),
 ])
 export const transactionCurrencySchema = t.Union([t.Literal('USD'), t.Literal('TRY')])
 export const cycleNameSchema = t.String({ minLength: 1, maxLength: 100 })
@@ -37,10 +39,26 @@ export const createCycleSettlementTransactionBodySchema = t.Object({
   amount: t.Number({ minimum: 0.0000001 }),
 })
 
+export const createDepositBalanceCorrectionBodySchema = t.Object({
+  cycle: cycleNameSchema,
+  type: t.Literal('DEPOSIT_BALANCE_CORRECTION'),
+  occurredAt: t.Optional(t.String({ format: 'date-time' })),
+  amount: t.Number({ minimum: 0.0000001 }),
+})
+
+export const createWithdrawBalanceCorrectionBodySchema = t.Object({
+  cycle: cycleNameSchema,
+  type: t.Literal('WITHDRAW_BALANCE_CORRECTION'),
+  occurredAt: t.Optional(t.String({ format: 'date-time' })),
+  amount: t.Number({ minimum: 0.0000001 }),
+})
+
 export const createTransactionBodySchema = t.Union([
   createBuyTransactionBodySchema,
   createSellTransactionBodySchema,
   createCycleSettlementTransactionBodySchema,
+  createDepositBalanceCorrectionBodySchema,
+  createWithdrawBalanceCorrectionBodySchema,
 ])
 
 export const transactionResponseSchema = t.Object({
