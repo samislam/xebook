@@ -13,6 +13,8 @@ export type TradebookRow = {
     | 'CYCLE_SETTLEMENT'
     | 'DEPOSIT_BALANCE_CORRECTION'
     | 'WITHDRAW_BALANCE_CORRECTION'
+  paymentMethodName: string | null
+  paymentMethodIconFileName: string | null
   paidLabel: string
   receivedLabel: string
   unitPriceTry: number | null
@@ -41,12 +43,8 @@ const formatUsdt = (value: number) => formatAmount(value)
 
 const formatTry = (value: number) => formatAmount(value)
 
-const formatSignedUsdt = (value: number) =>
-  value === 0 ? formatUsdt(0) : `${value > 0 ? '+' : '-'}${formatUsdt(Math.abs(value))}`
-const formatSignedTry = (value: number) =>
-  value === 0
-    ? `${CURRENCY_SYMBOLS.TRY}${formatTry(0)}`
-    : `${value > 0 ? '+' : '-'}${CURRENCY_SYMBOLS.TRY}${formatTry(Math.abs(value))}`
+const getInstitutionIconSrc = (iconFileName: string | null) =>
+  iconFileName ? `/api/transactions/institutions/icon/${encodeURIComponent(iconFileName)}` : null
 
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString('en-US', {
@@ -88,15 +86,6 @@ export const TradebookTransactionsTable = ({
 }: TradebookTransactionsTableProps) => {
   const emptyRowsCount = Math.max(0, initialRows - rows.length)
 
-  const totals = rows.reduce(
-    (acc, row) => {
-      acc.usdtDelta += row.usdtDelta
-      acc.tryDelta += row.tryDelta
-      return acc
-    },
-    { usdtDelta: 0, tryDelta: 0 }
-  )
-
   return (
     <div className="border-border max-h-130 overflow-auto rounded-md border">
       <table className="w-full text-left text-xs">
@@ -110,12 +99,11 @@ export const TradebookTransactionsTable = ({
               <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Cycle</th>
             )}
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Type</th>
+            <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Payment method</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Paid</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Received</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Rate (TRY)</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Commission</th>
-            <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">USDT Δ</th>
-            <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">TRY Δ</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">USDT Balance</th>
           </tr>
         </thead>
@@ -155,6 +143,32 @@ export const TradebookTransactionsTable = ({
                         : row.type}
                 </span>
               </td>
+              <td className="px-3 py-2">
+                {row.paymentMethodName ? (
+                  <span className="inline-flex max-w-40 items-center gap-2">
+                    {row.paymentMethodIconFileName ? (
+                      <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+                        <Image
+                          src={getInstitutionIconSrc(row.paymentMethodIconFileName) as string}
+                          alt={row.paymentMethodName}
+                          width={16}
+                          height={16}
+                          unoptimized
+                          className="block h-full w-full object-cover"
+                        />
+                      </span>
+                    ) : (
+                      <span
+                        className="bg-muted inline-flex h-4 w-4 shrink-0 rounded-sm"
+                        aria-hidden
+                      />
+                    )}
+                    <span className="truncate">{row.paymentMethodName}</span>
+                  </span>
+                ) : (
+                  '-'
+                )}
+              </td>
               <td className={signedCellClassName(row.paidLabel)}>
                 {renderSignedLabel(row.paidLabel)}
               </td>
@@ -173,28 +187,6 @@ export const TradebookTransactionsTable = ({
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}%`}
-              </td>
-              <td
-                className={
-                  row.usdtDelta === 0
-                    ? 'text-muted-foreground px-3 py-2'
-                    : row.usdtDelta > 0
-                      ? 'px-3 py-2 text-emerald-600'
-                      : 'px-3 py-2 text-red-600'
-                }
-              >
-                {formatSignedUsdt(row.usdtDelta)}
-              </td>
-              <td
-                className={
-                  row.tryDelta === 0
-                    ? 'text-muted-foreground px-3 py-2'
-                    : row.tryDelta > 0
-                      ? 'px-3 py-2 text-emerald-600'
-                      : 'px-3 py-2 text-red-600'
-                }
-              >
-                {formatSignedTry(row.tryDelta)}
               </td>
               <td className="px-3 py-2 font-semibold">{formatUsdt(row.runningUsdtBalance)}</td>
             </tr>
@@ -215,7 +207,6 @@ export const TradebookTransactionsTable = ({
               <td className="px-3 py-2">-</td>
               <td className="px-3 py-2">-</td>
               <td className="px-3 py-2">-</td>
-              <td className="px-3 py-2">-</td>
             </tr>
           ))}
         </tbody>
@@ -228,35 +219,9 @@ export const TradebookTransactionsTable = ({
               </td>
               <td
                 className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2"
-                colSpan={showCycleColumn ? 7 : 6}
+                colSpan={showCycleColumn ? 8 : 7}
               >
                 All transactions
-              </td>
-              <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2">
-                <span
-                  className={
-                    totals.usdtDelta === 0
-                      ? 'text-muted-foreground'
-                      : totals.usdtDelta > 0
-                        ? 'text-emerald-600'
-                        : 'text-red-600'
-                  }
-                >
-                  {formatSignedUsdt(totals.usdtDelta)}
-                </span>
-              </td>
-              <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2">
-                <span
-                  className={
-                    totals.tryDelta === 0
-                      ? 'text-muted-foreground'
-                      : totals.tryDelta > 0
-                        ? 'text-emerald-600'
-                        : 'text-red-600'
-                  }
-                >
-                  {formatSignedTry(totals.tryDelta)}
-                </span>
               </td>
               <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2">
                 {formatUsdt(rows[rows.length - 1]?.runningUsdtBalance ?? 0)}

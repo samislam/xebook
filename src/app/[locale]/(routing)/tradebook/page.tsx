@@ -1175,6 +1175,12 @@ const TradebookPage = () => {
     const ordered = [...filteredTransactions].sort(
       (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
     )
+    const institutionIconByName = new Map(
+      institutions.map((institution) => [
+        institution.name.trim().toLowerCase(),
+        institution.iconFileName,
+      ])
+    )
 
     let runningUsdt = 0
 
@@ -1185,6 +1191,7 @@ const TradebookPage = () => {
         const paidValue = transaction.transactionValue ?? 0
         const usdtDelta = transaction.amountReceived
         const tryDelta = paidCurrency === 'TRY' ? -paidValue : 0
+        const paymentMethodName = transaction.senderInstitution?.trim() || null
         runningUsdt += usdtDelta
 
         return {
@@ -1193,6 +1200,10 @@ const TradebookPage = () => {
           cycle: transaction.cycle,
           occurredAt: transaction.occurredAt,
           type: 'BUY' as const,
+          paymentMethodName,
+          paymentMethodIconFileName: paymentMethodName
+            ? (institutionIconByName.get(paymentMethodName.toLowerCase()) ?? null)
+            : null,
           paidLabel:
             paidCurrency === 'TRY'
               ? `-${paidSymbol}${formatTry(paidValue)}`
@@ -1210,6 +1221,7 @@ const TradebookPage = () => {
         const soldUsdt = transaction.amountSold ?? 0
         const usdtDelta = -soldUsdt
         const tryDelta = transaction.amountReceived
+        const paymentMethodName = transaction.recipientInstitution?.trim() || null
         runningUsdt += usdtDelta
 
         return {
@@ -1218,6 +1230,10 @@ const TradebookPage = () => {
           cycle: transaction.cycle,
           occurredAt: transaction.occurredAt,
           type: 'SELL' as const,
+          paymentMethodName,
+          paymentMethodIconFileName: paymentMethodName
+            ? (institutionIconByName.get(paymentMethodName.toLowerCase()) ?? null)
+            : null,
           paidLabel: `-${CURRENCY_SYMBOLS.USDT} ${formatUsdt(soldUsdt)}`,
           receivedLabel: `+${CURRENCY_SYMBOLS.TRY}${formatTry(transaction.amountReceived)}`,
           unitPriceTry: transaction.pricePerUnit ?? transaction.effectiveRateTry,
@@ -1241,6 +1257,8 @@ const TradebookPage = () => {
           cycle: transaction.cycle,
           occurredAt: transaction.occurredAt,
           type: 'CYCLE_SETTLEMENT' as const,
+          paymentMethodName: null,
+          paymentMethodIconFileName: null,
           paidLabel:
             settlementOut > 0 ? `-${CURRENCY_SYMBOLS.USDT} ${formatUsdt(settlementOut)}` : '-',
           receivedLabel:
@@ -1262,6 +1280,8 @@ const TradebookPage = () => {
           cycle: transaction.cycle,
           occurredAt: transaction.occurredAt,
           type: 'DEPOSIT_BALANCE_CORRECTION' as const,
+          paymentMethodName: null,
+          paymentMethodIconFileName: null,
           paidLabel: '-',
           receivedLabel: `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(transaction.amountReceived)}`,
           unitPriceTry: null,
@@ -1281,6 +1301,8 @@ const TradebookPage = () => {
         cycle: transaction.cycle,
         occurredAt: transaction.occurredAt,
         type: 'WITHDRAW_BALANCE_CORRECTION' as const,
+        paymentMethodName: null,
+        paymentMethodIconFileName: null,
         paidLabel: `-${CURRENCY_SYMBOLS.USDT} ${formatUsdt(withdrawnUsdt)}`,
         receivedLabel: '-',
         unitPriceTry: null,
@@ -1290,7 +1312,7 @@ const TradebookPage = () => {
         runningUsdtBalance: runningUsdt,
       }
     })
-  }, [filteredTransactions])
+  }, [filteredTransactions, institutions])
 
   const stats = useMemo(() => {
     const boughtUsdt = filteredTransactions
