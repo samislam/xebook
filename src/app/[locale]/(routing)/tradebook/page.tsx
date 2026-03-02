@@ -1181,6 +1181,7 @@ const TradebookPage = () => {
         institution.iconFileName,
       ])
     )
+    const tryBuyLots: { remainingUsdt: number; unitCostTry: number }[] = []
 
     let runningUsdt = 0
 
@@ -1192,6 +1193,24 @@ const TradebookPage = () => {
         const usdtDelta = transaction.amountReceived
         const tryDelta = paidCurrency === 'TRY' ? -paidValue : 0
         const paymentMethodName = transaction.senderInstitution?.trim() || null
+        const unitCostTry =
+          transaction.effectiveRateTry ??
+          (transaction.transactionCurrency === 'TRY'
+            ? transaction.transactionValue && transaction.amountReceived > 0
+              ? transaction.transactionValue / transaction.amountReceived
+              : null
+            : transaction.transactionCurrency === 'USD' && transaction.usdTryRateAtBuy
+              ? transaction.transactionValue && transaction.amountReceived > 0
+                ? (transaction.transactionValue * transaction.usdTryRateAtBuy) /
+                  transaction.amountReceived
+                : null
+              : null)
+        if (unitCostTry) {
+          tryBuyLots.push({
+            remainingUsdt: transaction.amountReceived,
+            unitCostTry,
+          })
+        }
         runningUsdt += usdtDelta
 
         return {
@@ -1211,6 +1230,7 @@ const TradebookPage = () => {
           receivedLabel: `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(transaction.amountReceived)}`,
           unitPriceTry: transaction.effectiveRateTry,
           commissionPercent: transaction.commissionPercent,
+          rowProfitTry: null,
           usdtDelta,
           tryDelta,
           runningUsdtBalance: runningUsdt,
@@ -1222,6 +1242,28 @@ const TradebookPage = () => {
         const usdtDelta = -soldUsdt
         const tryDelta = transaction.amountReceived
         const paymentMethodName = transaction.recipientInstitution?.trim() || null
+        const sellRateTry = transaction.pricePerUnit ?? transaction.effectiveRateTry ?? 0
+        let rowProfitTry: number | null = null
+        if (soldUsdt > 0 && sellRateTry > 0) {
+          let remainingToMatch = soldUsdt
+          let matchedUsdt = 0
+          let matchedCostTry = 0
+
+          for (const lot of tryBuyLots) {
+            if (remainingToMatch <= 0) break
+            if (lot.remainingUsdt <= 0) continue
+
+            const matched = Math.min(lot.remainingUsdt, remainingToMatch)
+            lot.remainingUsdt -= matched
+            remainingToMatch -= matched
+            matchedUsdt += matched
+            matchedCostTry += matched * lot.unitCostTry
+          }
+
+          if (matchedUsdt > 0) {
+            rowProfitTry = matchedUsdt * sellRateTry - matchedCostTry
+          }
+        }
         runningUsdt += usdtDelta
 
         return {
@@ -1238,6 +1280,7 @@ const TradebookPage = () => {
           receivedLabel: `+${CURRENCY_SYMBOLS.TRY}${formatTry(transaction.amountReceived)}`,
           unitPriceTry: transaction.pricePerUnit ?? transaction.effectiveRateTry,
           commissionPercent: transaction.commissionPercent,
+          rowProfitTry,
           usdtDelta,
           tryDelta,
           runningUsdtBalance: runningUsdt,
@@ -1265,6 +1308,7 @@ const TradebookPage = () => {
             settlementIn > 0 ? `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(settlementIn)}` : '-',
           unitPriceTry: null,
           commissionPercent: null,
+          rowProfitTry: null,
           usdtDelta,
           tryDelta,
           runningUsdtBalance: runningUsdt,
@@ -1286,6 +1330,7 @@ const TradebookPage = () => {
           receivedLabel: `+${CURRENCY_SYMBOLS.USDT} ${formatUsdt(transaction.amountReceived)}`,
           unitPriceTry: null,
           commissionPercent: null,
+          rowProfitTry: null,
           usdtDelta,
           tryDelta: 0,
           runningUsdtBalance: runningUsdt,
@@ -1307,6 +1352,7 @@ const TradebookPage = () => {
         receivedLabel: '-',
         unitPriceTry: null,
         commissionPercent: null,
+        rowProfitTry: null,
         usdtDelta,
         tryDelta: 0,
         runningUsdtBalance: runningUsdt,

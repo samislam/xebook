@@ -19,6 +19,7 @@ export type TradebookRow = {
   receivedLabel: string
   unitPriceTry: number | null
   commissionPercent: number | null
+  rowProfitTry: number | null
   usdtDelta: number
   tryDelta: number
   runningUsdtBalance: number
@@ -42,6 +43,8 @@ const formatAmount = (value: number) =>
 const formatUsdt = (value: number) => formatAmount(value)
 
 const formatTry = (value: number) => formatAmount(value)
+const formatSignedTry = (value: number) =>
+  `${value >= 0 ? '+' : '-'}${CURRENCY_SYMBOLS.TRY}${formatTry(Math.abs(value))}`
 
 const getInstitutionIconSrc = (iconFileName: string | null) =>
   iconFileName ? `/api/transactions/institutions/icon/${encodeURIComponent(iconFileName)}` : null
@@ -85,6 +88,7 @@ export const TradebookTransactionsTable = ({
   onRowClick,
 }: TradebookTransactionsTableProps) => {
   const emptyRowsCount = Math.max(0, initialRows - rows.length)
+  const totalProfitTry = rows.reduce((sum, row) => sum + (row.rowProfitTry ?? 0), 0)
 
   return (
     <div className="border-border max-h-130 overflow-auto rounded-md border">
@@ -104,6 +108,7 @@ export const TradebookTransactionsTable = ({
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Received</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Rate (TRY)</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Commission</th>
+            <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">Profit (TRY)</th>
             <th className="sticky top-0 z-30 bg-[hsl(var(--card))] px-3 py-2">USDT Balance</th>
           </tr>
         </thead>
@@ -188,6 +193,17 @@ export const TradebookTransactionsTable = ({
                       maximumFractionDigits: 2,
                     })}%`}
               </td>
+              <td
+                className={
+                  row.rowProfitTry === null
+                    ? 'text-muted-foreground px-3 py-2'
+                    : row.rowProfitTry >= 0
+                      ? 'px-3 py-2 text-emerald-600'
+                      : 'px-3 py-2 text-red-600'
+                }
+              >
+                {row.rowProfitTry === null ? '-' : formatSignedTry(row.rowProfitTry)}
+              </td>
               <td className="px-3 py-2 font-semibold">{formatUsdt(row.runningUsdtBalance)}</td>
             </tr>
           ))}
@@ -200,6 +216,7 @@ export const TradebookTransactionsTable = ({
               <td className="border-border border-r px-3 py-2">{rows.length + index + 1}</td>
               <td className="px-3 py-2">-</td>
               {showCycleColumn && <td className="px-3 py-2">-</td>}
+              <td className="px-3 py-2">-</td>
               <td className="px-3 py-2">-</td>
               <td className="px-3 py-2">-</td>
               <td className="px-3 py-2">-</td>
@@ -222,6 +239,11 @@ export const TradebookTransactionsTable = ({
                 colSpan={showCycleColumn ? 8 : 7}
               >
                 All transactions
+              </td>
+              <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2">
+                <span className={totalProfitTry >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+                  {formatSignedTry(totalProfitTry)}
+                </span>
               </td>
               <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2">
                 {formatUsdt(rows[rows.length - 1]?.runningUsdtBalance ?? 0)}
