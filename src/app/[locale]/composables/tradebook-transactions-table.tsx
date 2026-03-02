@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { Banknote } from 'lucide-react'
 import { CURRENCY_SYMBOLS } from '@/constants'
 import usdtIcon from '@/media/usdt.svg'
 
@@ -48,6 +49,7 @@ const formatSignedTry = (value: number) =>
 
 const getInstitutionIconSrc = (iconFileName: string | null) =>
   iconFileName ? `/api/transactions/institutions/icon/${encodeURIComponent(iconFileName)}` : null
+const isCashPaymentMethod = (name: string | null) => name?.trim().toLowerCase() === 'cash'
 
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString('en-US', {
@@ -161,6 +163,10 @@ export const TradebookTransactionsTable = ({
                           unoptimized
                           className="block h-full w-full object-cover"
                         />
+                      </span>
+                    ) : isCashPaymentMethod(row.paymentMethodName) ? (
+                      <span className="bg-muted inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm">
+                        <Banknote className="h-3 w-3" />
                       </span>
                     ) : (
                       <span

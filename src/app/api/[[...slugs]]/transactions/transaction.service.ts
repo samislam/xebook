@@ -14,6 +14,7 @@ type BuyInput = {
   occurredAt?: string
   amountReceived: number
   commissionPercent?: number
+  payingWithCash?: boolean
   senderInstitution?: string
   senderIban?: string
   senderName?: string
@@ -30,6 +31,7 @@ type SellInput = {
   amountReceived?: number
   pricePerUnit?: number
   commissionPercent?: number
+  payingWithCash?: boolean
   senderInstitution?: string
   senderIban?: string
   senderName?: string
@@ -107,6 +109,7 @@ const toPlainTransaction = (row: {
   receivedCurrency: 'USD' | 'TRY'
   commissionPercent: Prisma.Decimal | null
   effectiveRateTry: Prisma.Decimal | null
+  payingWithCash: boolean
   senderInstitution: string | null
   senderIban: string | null
   senderName: string | null
@@ -129,6 +132,7 @@ const toPlainTransaction = (row: {
   receivedCurrency: row.receivedCurrency,
   commissionPercent: decimalToNumber(row.commissionPercent),
   effectiveRateTry: decimalToNumber(row.effectiveRateTry),
+  payingWithCash: row.payingWithCash,
   senderInstitution: row.senderInstitution,
   senderIban: row.senderIban,
   senderName: row.senderName,
@@ -439,6 +443,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent: null,
           effectiveRateTry: null,
+          payingWithCash: false,
           senderInstitution: null,
           senderIban: null,
           senderName: null,
@@ -460,7 +465,10 @@ export class TransactionService {
     })
 
     if (input.type === 'BUY') {
-      const recipientInstitutionId = await this.resolveInstitutionId(input.recipientInstitution)
+      const payingWithCash = input.payingWithCash ?? false
+      const recipientInstitutionId = payingWithCash
+        ? null
+        : await this.resolveInstitutionId(input.recipientInstitution)
       const commissionPercent =
         input.commissionPercent !== undefined
           ? input.commissionPercent
@@ -495,12 +503,13 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent,
           effectiveRateTry,
-          senderInstitution: normalizeOptionalText(input.senderInstitution),
-          senderIban: normalizeOptionalText(input.senderIban),
-          senderName: normalizeOptionalText(input.senderName),
+          payingWithCash,
+          senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
+          senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
+          senderName: payingWithCash ? null : normalizeOptionalText(input.senderName),
           recipientInstitutionId,
-          recipientIban: normalizeOptionalText(input.recipientIban),
-          recipientName: normalizeOptionalText(input.recipientName),
+          recipientIban: payingWithCash ? null : normalizeOptionalText(input.recipientIban),
+          recipientName: payingWithCash ? null : normalizeOptionalText(input.recipientName),
         },
         include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
       })
@@ -515,7 +524,10 @@ export class TransactionService {
       input.amountReceived ?? (input.pricePerUnit as number | undefined)! * netSoldUsdt
     const pricePerUnit = input.pricePerUnit ?? amountReceived / netSoldUsdt
 
-    const recipientInstitutionId = await this.resolveInstitutionId(input.recipientInstitution)
+    const payingWithCash = input.payingWithCash ?? false
+    const recipientInstitutionId = payingWithCash
+      ? null
+      : await this.resolveInstitutionId(input.recipientInstitution)
     const row = await prismaClient.tradeTransaction.update({
       where: { id },
       data: {
@@ -531,12 +543,13 @@ export class TransactionService {
         receivedCurrency: 'TRY',
         commissionPercent: input.commissionPercent,
         effectiveRateTry: pricePerUnit,
-        senderInstitution: normalizeOptionalText(input.senderInstitution),
-        senderIban: normalizeOptionalText(input.senderIban),
-        senderName: normalizeOptionalText(input.senderName),
+        payingWithCash,
+        senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
+        senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
+        senderName: payingWithCash ? null : normalizeOptionalText(input.senderName),
         recipientInstitutionId,
-        recipientIban: normalizeOptionalText(input.recipientIban),
-        recipientName: normalizeOptionalText(input.recipientName),
+        recipientIban: payingWithCash ? null : normalizeOptionalText(input.recipientIban),
+        recipientName: payingWithCash ? null : normalizeOptionalText(input.recipientName),
       },
       include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
     })
@@ -600,6 +613,7 @@ export class TransactionService {
             amountReceived: 0,
             amountSold: amount,
             receivedCurrency: 'TRY',
+            payingWithCash: false,
           },
           include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
         }),
@@ -611,6 +625,7 @@ export class TransactionService {
             amountReceived: amount,
             amountSold: null,
             receivedCurrency: 'TRY',
+            payingWithCash: false,
           },
           include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
         }),
@@ -662,6 +677,7 @@ export class TransactionService {
           amountReceived: input.type === 'DEPOSIT_BALANCE_CORRECTION' ? amount : 0,
           amountSold: input.type === 'WITHDRAW_BALANCE_CORRECTION' ? amount : null,
           receivedCurrency: 'TRY',
+          payingWithCash: false,
           senderInstitution: null,
           senderIban: null,
           senderName: null,
@@ -683,7 +699,10 @@ export class TransactionService {
     })
 
     if (input.type === 'BUY') {
-      const recipientInstitutionId = await this.resolveInstitutionId(input.recipientInstitution)
+      const payingWithCash = input.payingWithCash ?? false
+      const recipientInstitutionId = payingWithCash
+        ? null
+        : await this.resolveInstitutionId(input.recipientInstitution)
       const commissionPercent =
         input.commissionPercent !== undefined
           ? input.commissionPercent
@@ -715,12 +734,13 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent,
           effectiveRateTry,
-          senderInstitution: normalizeOptionalText(input.senderInstitution),
-          senderIban: normalizeOptionalText(input.senderIban),
-          senderName: normalizeOptionalText(input.senderName),
+          payingWithCash,
+          senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
+          senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
+          senderName: payingWithCash ? null : normalizeOptionalText(input.senderName),
           recipientInstitutionId,
-          recipientIban: normalizeOptionalText(input.recipientIban),
-          recipientName: normalizeOptionalText(input.recipientName),
+          recipientIban: payingWithCash ? null : normalizeOptionalText(input.recipientIban),
+          recipientName: payingWithCash ? null : normalizeOptionalText(input.recipientName),
         },
         include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
       })
@@ -735,7 +755,10 @@ export class TransactionService {
       input.amountReceived ?? (input.pricePerUnit as number | undefined)! * netSoldUsdt
     const pricePerUnit = input.pricePerUnit ?? amountReceived / netSoldUsdt
 
-    const recipientInstitutionId = await this.resolveInstitutionId(input.recipientInstitution)
+    const payingWithCash = input.payingWithCash ?? false
+    const recipientInstitutionId = payingWithCash
+      ? null
+      : await this.resolveInstitutionId(input.recipientInstitution)
     const row = await prismaClient.tradeTransaction.create({
       data: {
         cycleId: cycle.id,
@@ -747,12 +770,13 @@ export class TransactionService {
         receivedCurrency: 'TRY',
         commissionPercent: input.commissionPercent,
         effectiveRateTry: pricePerUnit,
-        senderInstitution: normalizeOptionalText(input.senderInstitution),
-        senderIban: normalizeOptionalText(input.senderIban),
-        senderName: normalizeOptionalText(input.senderName),
+        payingWithCash,
+        senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
+        senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
+        senderName: payingWithCash ? null : normalizeOptionalText(input.senderName),
         recipientInstitutionId,
-        recipientIban: normalizeOptionalText(input.recipientIban),
-        recipientName: normalizeOptionalText(input.recipientName),
+        recipientIban: payingWithCash ? null : normalizeOptionalText(input.recipientIban),
+        recipientName: payingWithCash ? null : normalizeOptionalText(input.recipientName),
       },
       include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
     })

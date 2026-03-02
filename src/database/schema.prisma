@@ -42,6 +42,7 @@ model TradeTransaction {
   receivedCurrency    TransactionCurrency @default(TRY)
   commissionPercent   Decimal?            @db.Decimal(8, 4)
   effectiveRateTry    Decimal?            @db.Decimal(18, 6)
+  payingWithCash      Boolean             @default(false)
   senderInstitution   String?
   senderIban          String?
   senderName          String?

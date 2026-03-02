@@ -16,6 +16,7 @@ type ComboboxProps = {
   emptyText?: string
   startAction?: React.ReactNode
   endAction?: React.ReactNode
+  disabled?: boolean
   onValueChange: (value: string) => void
   renderOption?: (option: ComboboxOption) => React.ReactNode
 }
@@ -27,6 +28,7 @@ export const Combobox = ({
   emptyText = 'No options found',
   startAction,
   endAction,
+  disabled = false,
   onValueChange,
   renderOption,
 }: ComboboxProps) => {
@@ -44,17 +46,22 @@ export const Combobox = ({
         value={value}
         placeholder={placeholder}
         startAction={startAction}
-        onFocus={() => setIsOpen(true)}
+        disabled={disabled}
+        onFocus={() => {
+          if (disabled) return
+          setIsOpen(true)
+        }}
         onBlur={() => {
           setTimeout(() => setIsOpen(false), 120)
         }}
         onChange={(event) => {
+          if (disabled) return
           onValueChange(event.target.value)
           setIsOpen(true)
         }}
         endAction={endAction}
       />
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-52 w-full overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md">
           {filteredOptions.length === 0 ? (
             <p className="text-muted-foreground px-2 py-1.5 text-sm">{emptyText}</p>

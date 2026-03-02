@@ -83,6 +83,7 @@ type TradeTransaction = {
   receivedCurrency: TransactionCurrency
   commissionPercent: number | null
   effectiveRateTry: number | null
+  payingWithCash: boolean
   senderInstitution: string | null
   senderIban: string | null
   senderName: string | null
@@ -254,6 +255,7 @@ const TradebookPage = () => {
   const [recipientInstitution, setRecipientInstitution] = useState('')
   const [recipientIban, setRecipientIban] = useState('')
   const [recipientName, setRecipientName] = useState('')
+  const [payingWithCash, setPayingWithCash] = useState(false)
   const [isInstitutionDialogOpen, setIsInstitutionDialogOpen] = useState(false)
   const [newInstitutionName, setNewInstitutionName] = useState('')
   const [newInstitutionIcon, setNewInstitutionIcon] = useState<File | null>(null)
@@ -391,6 +393,7 @@ const TradebookPage = () => {
     setRecipientInstitution('')
     setRecipientIban('')
     setRecipientName('')
+    setPayingWithCash(false)
     setNewInstitutionName('')
     setNewInstitutionIcon(null)
     setNewInstitutionIconPreviewUrl(null)
@@ -484,12 +487,15 @@ const TradebookPage = () => {
               occurredAt: occurredAtIso,
               amountReceived: normalizedBuyAmountReceived,
               commissionPercent: buyCommissionPercent,
-              senderInstitution: senderInstitution.trim() || undefined,
-              senderIban: senderIban.trim() || undefined,
-              senderName: senderName.trim() || undefined,
-              recipientInstitution: recipientInstitution.trim() || undefined,
-              recipientIban: recipientIban.trim() || undefined,
-              recipientName: recipientName.trim() || undefined,
+              payingWithCash,
+              senderInstitution: payingWithCash ? undefined : senderInstitution.trim() || undefined,
+              senderIban: payingWithCash ? undefined : senderIban.trim() || undefined,
+              senderName: payingWithCash ? undefined : senderName.trim() || undefined,
+              recipientInstitution: payingWithCash
+                ? undefined
+                : recipientInstitution.trim() || undefined,
+              recipientIban: payingWithCash ? undefined : recipientIban.trim() || undefined,
+              recipientName: payingWithCash ? undefined : recipientName.trim() || undefined,
             }
           })()
         : transactionType === 'SELL'
@@ -517,12 +523,15 @@ const TradebookPage = () => {
                 if (!Number.isFinite(soldUsdt) || soldUsdt <= 0) return Number.NaN
                 return (feeValue / soldUsdt) * 100
               })(),
-              senderInstitution: senderInstitution.trim() || undefined,
-              senderIban: senderIban.trim() || undefined,
-              senderName: senderName.trim() || undefined,
-              recipientInstitution: recipientInstitution.trim() || undefined,
-              recipientIban: recipientIban.trim() || undefined,
-              recipientName: recipientName.trim() || undefined,
+              payingWithCash,
+              senderInstitution: payingWithCash ? undefined : senderInstitution.trim() || undefined,
+              senderIban: payingWithCash ? undefined : senderIban.trim() || undefined,
+              senderName: payingWithCash ? undefined : senderName.trim() || undefined,
+              recipientInstitution: payingWithCash
+                ? undefined
+                : recipientInstitution.trim() || undefined,
+              recipientIban: payingWithCash ? undefined : recipientIban.trim() || undefined,
+              recipientName: payingWithCash ? undefined : recipientName.trim() || undefined,
             }
           : transactionType === 'CYCLE_SETTLEMENT'
             ? {
@@ -1107,6 +1116,7 @@ const TradebookPage = () => {
       setRecipientInstitution(transaction.recipientInstitution ?? '')
       setRecipientIban(transaction.recipientIban ?? '')
       setRecipientName(transaction.recipientName ?? '')
+      setPayingWithCash(transaction.payingWithCash)
     } else if (transaction.type === 'SELL') {
       setSellAmountSold(toInputNumber(transaction.amountSold))
       if (transaction.pricePerUnit !== null) {
@@ -1136,6 +1146,7 @@ const TradebookPage = () => {
       setRecipientInstitution(transaction.recipientInstitution ?? '')
       setRecipientIban(transaction.recipientIban ?? '')
       setRecipientName(transaction.recipientName ?? '')
+      setPayingWithCash(transaction.payingWithCash)
     } else if (
       transaction.type === 'DEPOSIT_BALANCE_CORRECTION' ||
       transaction.type === 'WITHDRAW_BALANCE_CORRECTION'
@@ -1162,6 +1173,7 @@ const TradebookPage = () => {
       setRecipientInstitution('')
       setRecipientIban('')
       setRecipientName('')
+      setPayingWithCash(false)
     } else {
       appToast.info('Cycle settlement transactions cannot be edited yet')
       return
@@ -1192,7 +1204,9 @@ const TradebookPage = () => {
         const paidValue = transaction.transactionValue ?? 0
         const usdtDelta = transaction.amountReceived
         const tryDelta = paidCurrency === 'TRY' ? -paidValue : 0
-        const paymentMethodName = transaction.senderInstitution?.trim() || null
+        const paymentMethodName = transaction.payingWithCash
+          ? 'cash'
+          : transaction.senderInstitution?.trim() || null
         const unitCostTry =
           transaction.effectiveRateTry ??
           (transaction.transactionCurrency === 'TRY'
@@ -1241,7 +1255,9 @@ const TradebookPage = () => {
         const soldUsdt = transaction.amountSold ?? 0
         const usdtDelta = -soldUsdt
         const tryDelta = transaction.amountReceived
-        const paymentMethodName = transaction.recipientInstitution?.trim() || null
+        const paymentMethodName = transaction.payingWithCash
+          ? 'cash'
+          : transaction.recipientInstitution?.trim() || null
         const sellRateTry = transaction.pricePerUnit ?? transaction.effectiveRateTry ?? 0
         let rowProfitTry: number | null = null
         if (soldUsdt > 0 && sellRateTry > 0) {
@@ -1493,7 +1509,8 @@ const TradebookPage = () => {
   const renderInstitutionCombobox = (
     role: 'sender' | 'recipient',
     value: string,
-    onValueChange: (nextValue: string) => void
+    onValueChange: (nextValue: string) => void,
+    disabled = false
   ) => {
     const selected = institutionOptions.find(
       (option) => option.name.toLowerCase() === value.trim().toLowerCase()
@@ -1506,6 +1523,7 @@ const TradebookPage = () => {
         placeholder="Select institution"
         emptyText="No institutions found"
         onValueChange={onValueChange}
+        disabled={disabled}
         startAction={
           selected?.iconFileName ? (
             <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-sm">
@@ -1528,6 +1546,7 @@ const TradebookPage = () => {
             className="h-7 w-7"
             onClick={() => openInstitutionDialog(role)}
             aria-label="Create institution"
+            disabled={disabled}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -1947,6 +1966,25 @@ const TradebookPage = () => {
                                 Sender & recipient information
                               </AccordionTrigger>
                               <AccordionContent className="pt-1">
+                                <label className="mb-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold">
+                                  <input
+                                    type="checkbox"
+                                    checked={payingWithCash}
+                                    onChange={(event) => {
+                                      const checked = event.target.checked
+                                      setPayingWithCash(checked)
+                                      if (checked) {
+                                        setSenderInstitution('')
+                                        setSenderIban('')
+                                        setSenderName('')
+                                        setRecipientInstitution('')
+                                        setRecipientIban('')
+                                        setRecipientName('')
+                                      }
+                                    }}
+                                  />
+                                  Paying with cash
+                                </label>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                   <div className="rounded-lg border border-[hsl(var(--border))] p-3">
                                     <p className="mb-3 text-sm font-semibold">Sender information</p>
@@ -1956,7 +1994,8 @@ const TradebookPage = () => {
                                         {renderInstitutionCombobox(
                                           'sender',
                                           senderInstitution,
-                                          setSenderInstitution
+                                          setSenderInstitution,
+                                          payingWithCash
                                         )}
                                       </div>
                                       <div>
@@ -1965,6 +2004,7 @@ const TradebookPage = () => {
                                           value={senderIban}
                                           onChange={(event) => setSenderIban(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                       <div>
@@ -1973,6 +2013,7 @@ const TradebookPage = () => {
                                           value={senderName}
                                           onChange={(event) => setSenderName(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                     </div>
@@ -1988,7 +2029,8 @@ const TradebookPage = () => {
                                         {renderInstitutionCombobox(
                                           'recipient',
                                           recipientInstitution,
-                                          setRecipientInstitution
+                                          setRecipientInstitution,
+                                          payingWithCash
                                         )}
                                       </div>
                                       <div>
@@ -1997,6 +2039,7 @@ const TradebookPage = () => {
                                           value={recipientIban}
                                           onChange={(event) => setRecipientIban(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                       <div>
@@ -2005,6 +2048,7 @@ const TradebookPage = () => {
                                           value={recipientName}
                                           onChange={(event) => setRecipientName(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                     </div>
@@ -2150,6 +2194,25 @@ const TradebookPage = () => {
                                 Sender & recipient information
                               </AccordionTrigger>
                               <AccordionContent className="pt-1">
+                                <label className="mb-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold">
+                                  <input
+                                    type="checkbox"
+                                    checked={payingWithCash}
+                                    onChange={(event) => {
+                                      const checked = event.target.checked
+                                      setPayingWithCash(checked)
+                                      if (checked) {
+                                        setSenderInstitution('')
+                                        setSenderIban('')
+                                        setSenderName('')
+                                        setRecipientInstitution('')
+                                        setRecipientIban('')
+                                        setRecipientName('')
+                                      }
+                                    }}
+                                  />
+                                  Paying with cash
+                                </label>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                   <div className="rounded-lg border border-[hsl(var(--border))] p-3">
                                     <p className="mb-3 text-sm font-semibold">Sender information</p>
@@ -2159,7 +2222,8 @@ const TradebookPage = () => {
                                         {renderInstitutionCombobox(
                                           'sender',
                                           senderInstitution,
-                                          setSenderInstitution
+                                          setSenderInstitution,
+                                          payingWithCash
                                         )}
                                       </div>
                                       <div>
@@ -2168,6 +2232,7 @@ const TradebookPage = () => {
                                           value={senderIban}
                                           onChange={(event) => setSenderIban(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                       <div>
@@ -2176,6 +2241,7 @@ const TradebookPage = () => {
                                           value={senderName}
                                           onChange={(event) => setSenderName(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                     </div>
@@ -2191,7 +2257,8 @@ const TradebookPage = () => {
                                         {renderInstitutionCombobox(
                                           'recipient',
                                           recipientInstitution,
-                                          setRecipientInstitution
+                                          setRecipientInstitution,
+                                          payingWithCash
                                         )}
                                       </div>
                                       <div>
@@ -2200,6 +2267,7 @@ const TradebookPage = () => {
                                           value={recipientIban}
                                           onChange={(event) => setRecipientIban(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                       <div>
@@ -2208,6 +2276,7 @@ const TradebookPage = () => {
                                           value={recipientName}
                                           onChange={(event) => setRecipientName(event.target.value)}
                                           placeholder="Optional"
+                                          disabled={payingWithCash}
                                         />
                                       </div>
                                     </div>
