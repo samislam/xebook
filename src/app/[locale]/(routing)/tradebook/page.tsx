@@ -1461,7 +1461,11 @@ const TradebookPage = () => {
           transactions.filter((transaction) => transaction.cycle === cycleName)
         ),
       }))
-      .sort((a, b) => b.profitTry - a.profitTry)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() ||
+          a.cycleName.localeCompare(b.cycleName)
+      )
   }, [cycleOptions, transactions])
 
   useEffect(() => {
