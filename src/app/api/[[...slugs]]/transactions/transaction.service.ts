@@ -46,6 +46,7 @@ type CycleSettlementInput = {
   toCycle: string
   occurredAt?: string
   amount: number
+  description?: string
 }
 
 type DepositBalanceCorrectionInput = {
@@ -109,6 +110,7 @@ const toPlainTransaction = (row: {
   receivedCurrency: 'USD' | 'TRY'
   commissionPercent: Prisma.Decimal | null
   effectiveRateTry: Prisma.Decimal | null
+  description: string | null
   payingWithCash: boolean
   senderInstitution: string | null
   senderIban: string | null
@@ -132,6 +134,7 @@ const toPlainTransaction = (row: {
   receivedCurrency: row.receivedCurrency,
   commissionPercent: decimalToNumber(row.commissionPercent),
   effectiveRateTry: decimalToNumber(row.effectiveRateTry),
+  description: row.description,
   payingWithCash: row.payingWithCash,
   senderInstitution: row.senderInstitution,
   senderIban: row.senderIban,
@@ -443,6 +446,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent: null,
           effectiveRateTry: null,
+          description: null,
           payingWithCash: false,
           senderInstitution: null,
           senderIban: null,
@@ -503,6 +507,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent,
           effectiveRateTry,
+          description: null,
           payingWithCash,
           senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
           senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
@@ -543,6 +548,7 @@ export class TransactionService {
         receivedCurrency: 'TRY',
         commissionPercent: input.commissionPercent,
         effectiveRateTry: pricePerUnit,
+        description: null,
         payingWithCash,
         senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
         senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
@@ -613,6 +619,7 @@ export class TransactionService {
             amountReceived: 0,
             amountSold: amount,
             receivedCurrency: 'TRY',
+            description: normalizeOptionalText(input.description),
             payingWithCash: false,
           },
           include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
@@ -625,6 +632,7 @@ export class TransactionService {
             amountReceived: amount,
             amountSold: null,
             receivedCurrency: 'TRY',
+            description: normalizeOptionalText(input.description),
             payingWithCash: false,
           },
           include: { cycle: true, recipientInstitutionRef: { select: { name: true } } },
@@ -677,6 +685,7 @@ export class TransactionService {
           amountReceived: input.type === 'DEPOSIT_BALANCE_CORRECTION' ? amount : 0,
           amountSold: input.type === 'WITHDRAW_BALANCE_CORRECTION' ? amount : null,
           receivedCurrency: 'TRY',
+          description: null,
           payingWithCash: false,
           senderInstitution: null,
           senderIban: null,
@@ -734,6 +743,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent,
           effectiveRateTry,
+          description: null,
           payingWithCash,
           senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
           senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
@@ -770,6 +780,7 @@ export class TransactionService {
         receivedCurrency: 'TRY',
         commissionPercent: input.commissionPercent,
         effectiveRateTry: pricePerUnit,
+        description: null,
         payingWithCash,
         senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
         senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),

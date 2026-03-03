@@ -9,6 +9,7 @@ import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AppTabs } from '../../composables/app-tabs'
 import { Input } from '@/components/ui/shadcnui/input'
+import { Textarea } from '@/components/ui/shadcnui/textarea'
 import { Alert } from '@/components/ui/shadcnui/alert'
 import { Button } from '@/components/ui/shadcnui/button'
 import { Combobox } from '@/components/ui/shadcnui/combobox'
@@ -83,6 +84,7 @@ type TradeTransaction = {
   receivedCurrency: TransactionCurrency
   commissionPercent: number | null
   effectiveRateTry: number | null
+  description: string | null
   payingWithCash: boolean
   senderInstitution: string | null
   senderIban: string | null
@@ -248,6 +250,7 @@ const TradebookPage = () => {
   const [sellInputMode, setSellInputMode] = useState<SellInputMode>('price-per-unit')
   const [settlementToCycle, setSettlementToCycle] = useState('')
   const [settlementAmount, setSettlementAmount] = useState('')
+  const [settlementDescription, setSettlementDescription] = useState('')
   const [correctionAmount, setCorrectionAmount] = useState('')
   const [senderInstitution, setSenderInstitution] = useState('')
   const [senderIban, setSenderIban] = useState('')
@@ -386,6 +389,7 @@ const TradebookPage = () => {
     setSellInputMode('price-per-unit')
     setSettlementToCycle('')
     setSettlementAmount('')
+    setSettlementDescription('')
     setCorrectionAmount('')
     setSenderInstitution('')
     setSenderIban('')
@@ -540,6 +544,7 @@ const TradebookPage = () => {
                 fromCycle: effectiveCycle,
                 toCycle: settlementToCycle.trim(),
                 amount: Number.parseFloat(settlementAmount),
+                description: settlementDescription.trim() || undefined,
               }
             : {
                 cycle: effectiveCycle,
@@ -1109,6 +1114,7 @@ const TradebookPage = () => {
       setSellFee('')
       setSettlementAmount('')
       setSettlementToCycle('')
+      setSettlementDescription('')
       setCorrectionAmount('')
       setSenderInstitution(transaction.senderInstitution ?? '')
       setSenderIban(transaction.senderIban ?? '')
@@ -1139,6 +1145,7 @@ const TradebookPage = () => {
       setBuyFee('')
       setSettlementAmount('')
       setSettlementToCycle('')
+      setSettlementDescription('')
       setCorrectionAmount('')
       setSenderInstitution(transaction.senderInstitution ?? '')
       setSenderIban(transaction.senderIban ?? '')
@@ -1167,6 +1174,7 @@ const TradebookPage = () => {
       setSellFee('')
       setSettlementAmount('')
       setSettlementToCycle('')
+      setSettlementDescription('')
       setSenderInstitution('')
       setSenderIban('')
       setSenderName('')
@@ -2346,6 +2354,16 @@ const TradebookPage = () => {
                           </p>
                         </div>
 
+                        <div className="md:col-span-2">
+                          <p className="mb-2 text-sm font-semibold">Description (optional)</p>
+                          <Textarea
+                            value={settlementDescription}
+                            onChange={(event) => setSettlementDescription(event.target.value)}
+                            placeholder="Add transfer notes"
+                            rows={3}
+                          />
+                        </div>
+
                         <div>
                           <p className="mb-2 text-sm font-semibold">Datetime</p>
                           <Input
@@ -2870,6 +2888,10 @@ const TradebookPage = () => {
                 {selectedTransaction.effectiveRateTry === null
                   ? '-'
                   : formatAmount(selectedTransaction.effectiveRateTry)}
+              </p>
+              <p>
+                <span className="font-semibold">Description:</span>{' '}
+                {selectedTransaction.description ?? '-'}
               </p>
               <p>
                 <span className="font-semibold">Sender institution:</span>{' '}

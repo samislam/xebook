@@ -10,6 +10,7 @@ export const transactionTypeSchema = t.Union([
 export const transactionCurrencySchema = t.Union([t.Literal('USD'), t.Literal('TRY')])
 export const cycleNameSchema = t.String({ minLength: 1, maxLength: 100 })
 const optionalPartyTextSchema = t.Optional(t.String({ minLength: 1, maxLength: 255 }))
+const optionalDescriptionSchema = t.Optional(t.String({ minLength: 1, maxLength: 2000 }))
 
 export const createBuyTransactionBodySchema = t.Object({
   cycle: cycleNameSchema,
@@ -52,6 +53,7 @@ export const createCycleSettlementTransactionBodySchema = t.Object({
   toCycle: cycleNameSchema,
   occurredAt: t.Optional(t.String({ format: 'date-time' })),
   amount: t.Number({ minimum: 0.0000001 }),
+  description: optionalDescriptionSchema,
 })
 
 export const createDepositBalanceCorrectionBodySchema = t.Object({
@@ -99,6 +101,7 @@ export const transactionResponseSchema = t.Object({
   receivedCurrency: transactionCurrencySchema,
   commissionPercent: t.Union([t.Number(), t.Null()]),
   effectiveRateTry: t.Union([t.Number(), t.Null()]),
+  description: t.Union([t.String(), t.Null()]),
   payingWithCash: t.Boolean(),
   senderInstitution: t.Union([t.String(), t.Null()]),
   senderIban: t.Union([t.String(), t.Null()]),
