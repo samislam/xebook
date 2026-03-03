@@ -21,6 +21,7 @@ export const createBuyTransactionBodySchema = t.Object({
   occurredAt: t.Optional(t.String({ format: 'date-time' })),
   amountReceived: t.Number({ minimum: 0.0000001 }),
   commissionPercent: t.Optional(t.Number({ minimum: 0 })),
+  description: optionalDescriptionSchema,
   payingWithCash: t.Optional(t.Boolean()),
   senderInstitution: optionalPartyTextSchema,
   senderIban: optionalPartyTextSchema,
@@ -38,6 +39,7 @@ export const createSellTransactionBodySchema = t.Object({
   amountReceived: t.Optional(t.Number({ minimum: 0.0000001 })),
   pricePerUnit: t.Optional(t.Number({ minimum: 0.0000001 })),
   commissionPercent: t.Optional(t.Number({ minimum: 0 })),
+  description: optionalDescriptionSchema,
   payingWithCash: t.Optional(t.Boolean()),
   senderInstitution: optionalPartyTextSchema,
   senderIban: optionalPartyTextSchema,
@@ -61,6 +63,7 @@ export const createDepositBalanceCorrectionBodySchema = t.Object({
   type: t.Literal('DEPOSIT_BALANCE_CORRECTION'),
   occurredAt: t.Optional(t.String({ format: 'date-time' })),
   amount: t.Number({ minimum: 0.0000001 }),
+  description: optionalDescriptionSchema,
 })
 
 export const createWithdrawBalanceCorrectionBodySchema = t.Object({
@@ -68,6 +71,7 @@ export const createWithdrawBalanceCorrectionBodySchema = t.Object({
   type: t.Literal('WITHDRAW_BALANCE_CORRECTION'),
   occurredAt: t.Optional(t.String({ format: 'date-time' })),
   amount: t.Number({ minimum: 0.0000001 }),
+  description: optionalDescriptionSchema,
 })
 
 export const createTransactionBodySchema = t.Union([

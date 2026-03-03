@@ -250,7 +250,7 @@ const TradebookPage = () => {
   const [sellInputMode, setSellInputMode] = useState<SellInputMode>('price-per-unit')
   const [settlementToCycle, setSettlementToCycle] = useState('')
   const [settlementAmount, setSettlementAmount] = useState('')
-  const [settlementDescription, setSettlementDescription] = useState('')
+  const [transactionDescription, setTransactionDescription] = useState('')
   const [correctionAmount, setCorrectionAmount] = useState('')
   const [senderInstitution, setSenderInstitution] = useState('')
   const [senderIban, setSenderIban] = useState('')
@@ -389,7 +389,7 @@ const TradebookPage = () => {
     setSellInputMode('price-per-unit')
     setSettlementToCycle('')
     setSettlementAmount('')
-    setSettlementDescription('')
+    setTransactionDescription('')
     setCorrectionAmount('')
     setSenderInstitution('')
     setSenderIban('')
@@ -491,6 +491,7 @@ const TradebookPage = () => {
               occurredAt: occurredAtIso,
               amountReceived: normalizedBuyAmountReceived,
               commissionPercent: buyCommissionPercent,
+              description: transactionDescription.trim() || undefined,
               payingWithCash,
               senderInstitution: payingWithCash ? undefined : senderInstitution.trim() || undefined,
               senderIban: payingWithCash ? undefined : senderIban.trim() || undefined,
@@ -527,6 +528,7 @@ const TradebookPage = () => {
                 if (!Number.isFinite(soldUsdt) || soldUsdt <= 0) return Number.NaN
                 return (feeValue / soldUsdt) * 100
               })(),
+              description: transactionDescription.trim() || undefined,
               payingWithCash,
               senderInstitution: payingWithCash ? undefined : senderInstitution.trim() || undefined,
               senderIban: payingWithCash ? undefined : senderIban.trim() || undefined,
@@ -544,7 +546,7 @@ const TradebookPage = () => {
                 fromCycle: effectiveCycle,
                 toCycle: settlementToCycle.trim(),
                 amount: Number.parseFloat(settlementAmount),
-                description: settlementDescription.trim() || undefined,
+                description: transactionDescription.trim() || undefined,
               }
             : {
                 cycle: effectiveCycle,
@@ -554,6 +556,7 @@ const TradebookPage = () => {
                     : ('WITHDRAW_BALANCE_CORRECTION' as const),
                 occurredAt: occurredAtIso,
                 amount: Number.parseFloat(correctionAmount),
+                description: transactionDescription.trim() || undefined,
               }
 
     if (payload.type === 'BUY') {
@@ -1114,7 +1117,7 @@ const TradebookPage = () => {
       setSellFee('')
       setSettlementAmount('')
       setSettlementToCycle('')
-      setSettlementDescription('')
+      setTransactionDescription(transaction.description ?? '')
       setCorrectionAmount('')
       setSenderInstitution(transaction.senderInstitution ?? '')
       setSenderIban(transaction.senderIban ?? '')
@@ -1145,7 +1148,7 @@ const TradebookPage = () => {
       setBuyFee('')
       setSettlementAmount('')
       setSettlementToCycle('')
-      setSettlementDescription('')
+      setTransactionDescription(transaction.description ?? '')
       setCorrectionAmount('')
       setSenderInstitution(transaction.senderInstitution ?? '')
       setSenderIban(transaction.senderIban ?? '')
@@ -1174,7 +1177,7 @@ const TradebookPage = () => {
       setSellFee('')
       setSettlementAmount('')
       setSettlementToCycle('')
-      setSettlementDescription('')
+      setTransactionDescription(transaction.description ?? '')
       setSenderInstitution('')
       setSenderIban('')
       setSenderName('')
@@ -2067,6 +2070,16 @@ const TradebookPage = () => {
                           </Accordion>
                         </div>
 
+                        <div className="md:col-span-2">
+                          <p className="mb-2 text-sm font-semibold">Description (optional)</p>
+                          <Textarea
+                            value={transactionDescription}
+                            onChange={(event) => setTransactionDescription(event.target.value)}
+                            placeholder="Add notes"
+                            rows={3}
+                          />
+                        </div>
+
                         <div>
                           <p className="mb-2 text-sm font-semibold">Datetime</p>
                           <Input
@@ -2295,6 +2308,16 @@ const TradebookPage = () => {
                           </Accordion>
                         </div>
 
+                        <div className="md:col-span-2">
+                          <p className="mb-2 text-sm font-semibold">Description (optional)</p>
+                          <Textarea
+                            value={transactionDescription}
+                            onChange={(event) => setTransactionDescription(event.target.value)}
+                            placeholder="Add notes"
+                            rows={3}
+                          />
+                        </div>
+
                         <div>
                           <p className="mb-2 text-sm font-semibold">Datetime</p>
                           <Input
@@ -2357,8 +2380,8 @@ const TradebookPage = () => {
                         <div className="md:col-span-2">
                           <p className="mb-2 text-sm font-semibold">Description (optional)</p>
                           <Textarea
-                            value={settlementDescription}
-                            onChange={(event) => setSettlementDescription(event.target.value)}
+                            value={transactionDescription}
+                            onChange={(event) => setTransactionDescription(event.target.value)}
                             placeholder="Add transfer notes"
                             rows={3}
                           />
@@ -2413,6 +2436,16 @@ const TradebookPage = () => {
                             type="datetime-local"
                             value={occurredAt}
                             onChange={(event) => setOccurredAt(event.target.value)}
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <p className="mb-2 text-sm font-semibold">Description (optional)</p>
+                          <Textarea
+                            value={transactionDescription}
+                            onChange={(event) => setTransactionDescription(event.target.value)}
+                            placeholder="Add notes"
+                            rows={3}
                           />
                         </div>
                       </>

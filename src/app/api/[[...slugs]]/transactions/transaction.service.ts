@@ -14,6 +14,7 @@ type BuyInput = {
   occurredAt?: string
   amountReceived: number
   commissionPercent?: number
+  description?: string
   payingWithCash?: boolean
   senderInstitution?: string
   senderIban?: string
@@ -31,6 +32,7 @@ type SellInput = {
   amountReceived?: number
   pricePerUnit?: number
   commissionPercent?: number
+  description?: string
   payingWithCash?: boolean
   senderInstitution?: string
   senderIban?: string
@@ -54,6 +56,7 @@ type DepositBalanceCorrectionInput = {
   type: 'DEPOSIT_BALANCE_CORRECTION'
   occurredAt?: string
   amount: number
+  description?: string
 }
 
 type WithdrawBalanceCorrectionInput = {
@@ -61,6 +64,7 @@ type WithdrawBalanceCorrectionInput = {
   type: 'WITHDRAW_BALANCE_CORRECTION'
   occurredAt?: string
   amount: number
+  description?: string
 }
 
 type CreateTransactionInput =
@@ -446,7 +450,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent: null,
           effectiveRateTry: null,
-          description: null,
+          description: normalizeOptionalText(input.description),
           payingWithCash: false,
           senderInstitution: null,
           senderIban: null,
@@ -507,7 +511,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent,
           effectiveRateTry,
-          description: null,
+          description: normalizeOptionalText(input.description),
           payingWithCash,
           senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
           senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
@@ -548,7 +552,7 @@ export class TransactionService {
         receivedCurrency: 'TRY',
         commissionPercent: input.commissionPercent,
         effectiveRateTry: pricePerUnit,
-        description: null,
+        description: normalizeOptionalText(input.description),
         payingWithCash,
         senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
         senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
@@ -685,7 +689,7 @@ export class TransactionService {
           amountReceived: input.type === 'DEPOSIT_BALANCE_CORRECTION' ? amount : 0,
           amountSold: input.type === 'WITHDRAW_BALANCE_CORRECTION' ? amount : null,
           receivedCurrency: 'TRY',
-          description: null,
+          description: normalizeOptionalText(input.description),
           payingWithCash: false,
           senderInstitution: null,
           senderIban: null,
@@ -743,7 +747,7 @@ export class TransactionService {
           receivedCurrency: 'TRY',
           commissionPercent,
           effectiveRateTry,
-          description: null,
+          description: normalizeOptionalText(input.description),
           payingWithCash,
           senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
           senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
@@ -780,7 +784,7 @@ export class TransactionService {
         receivedCurrency: 'TRY',
         commissionPercent: input.commissionPercent,
         effectiveRateTry: pricePerUnit,
-        description: null,
+        description: normalizeOptionalText(input.description),
         payingWithCash,
         senderInstitution: payingWithCash ? null : normalizeOptionalText(input.senderInstitution),
         senderIban: payingWithCash ? null : normalizeOptionalText(input.senderIban),
