@@ -19,4 +19,10 @@ export const pageDefs = {
     description: 'Login page',
     icon: 'mdi:mdiLock',
   },
+  tradebook: {
+    href: '/tradebook',
+    title: 'Tradebook',
+    description: 'Tradebook page',
+    icon: 'mdi:mdiBookOpenVariant',
+  },
 } as const satisfies PagesDefs
