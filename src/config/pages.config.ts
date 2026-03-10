@@ -13,6 +13,12 @@ export const pageDefs = {
       }
     },
   },
+  simulate: {
+    href: '/simulate',
+    title: 'Simulate',
+    description: 'Simulation page',
+    icon: 'mdi:mdiChartTimelineVariant',
+  },
   login: {
     href: '/login',
     title: 'Login',
