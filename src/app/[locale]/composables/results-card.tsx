@@ -1,15 +1,14 @@
+'use client'
+
 import numeral from 'numeral'
 import { TradesTable } from './trades-table'
-import { type CalculationResult } from './calculate'
-
-type ResultsCardProps = {
-  result: CalculationResult | null
-}
+import { useSimulate } from '../(routing)/simulate/hooks/use-simulate'
 
 const formatUsd = (value: number) => numeral(value).format('0,0.00')
 const formatTry = (value: number) => numeral(value).format('0,0')
 
-export const ResultsCard = ({ result }: ResultsCardProps) => {
+export const ResultsCard = () => {
+  const { result } = useSimulate()
   const isProfit = (result?.totalProfitUsd ?? 0) >= 0
   const profitPct =
     result && result.startingUsd > 0 ? (result.totalProfitUsd / result.startingUsd) * 100 : 0

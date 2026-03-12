@@ -1,21 +1,18 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Form } from '@/components/ui/shadcnui/form'
 import { calculateExchangeLoops } from './calculate'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Toggle } from '@/components/ui/shadcnui/toggle'
 import { Button } from '@/components/ui/shadcnui/button'
 import { InputField } from '@/components/common/input-field'
 import { NumberInput } from '@/components/common/number-input'
+import { useSimulate } from '../(routing)/simulate/hooks/use-simulate'
 import { calculateFormSchema, type CalculateFormValues } from './calculate-form.schema'
-import type { CalculationResult } from './calculate'
 
-type CalculateFormProps = {
-  onCalculate: (result: CalculationResult) => void
-}
-
-export const CalculateForm = ({ onCalculate }: CalculateFormProps) => {
+export const CalculateForm = () => {
+  const { setResult } = useSimulate()
   const form = useForm<CalculateFormValues>({
     resolver: zodResolver(calculateFormSchema),
     defaultValues: {
@@ -55,7 +52,7 @@ export const CalculateForm = ({ onCalculate }: CalculateFormProps) => {
       : null
 
   const onSubmit = (values: CalculateFormValues) => {
-    onCalculate(calculateExchangeLoops(values))
+    setResult(calculateExchangeLoops(values))
   }
 
   return (
