@@ -82,7 +82,7 @@ export const CalculateForm = () => {
             control={form.control}
             name="useExchangeRate"
             label="Buying USDT in lira or dollars"
-            className="my-1! flex items-center justify-start gap-3 space-y-0 [&_[data-slot=label]]:pointer-events-none"
+            className="my-1! flex items-center justify-start gap-3 space-y-0 **:data-[slot=label]:pointer-events-none"
             render={(field) => (
               <Toggle
                 pressed={field.value}
@@ -100,7 +100,7 @@ export const CalculateForm = () => {
               control={form.control}
               name="applyCommission"
               label="Apply percent % commission?"
-              className="my-1! flex items-center justify-start gap-3 space-y-0 [&_[data-slot=label]]:pointer-events-none"
+              className="my-1! flex items-center justify-start gap-3 space-y-0 **:data-[slot=label]:pointer-events-none"
               render={(field) => (
                 <Toggle
                   pressed={field.value}
@@ -118,7 +118,7 @@ export const CalculateForm = () => {
             control={form.control}
             name="compoundProfits"
             label="Compound profits?"
-            className="my-1! flex items-center justify-start gap-3 space-y-0 [&_[data-slot=label]]:pointer-events-none"
+            className="my-1! flex items-center justify-start gap-3 space-y-0 **:data-[slot=label]:pointer-events-none"
             render={(field) => (
               <Toggle
                 pressed={field.value}
