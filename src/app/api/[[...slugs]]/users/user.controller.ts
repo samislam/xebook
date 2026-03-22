@@ -1,29 +1,14 @@
 import { Elysia, status } from 'elysia'
-import { Prisma } from '@/generated/prisma'
-import { AUTH_COOKIE } from '@/constants'
+import { userService } from './user.service'
 import { AuthMacro } from '../macros/auth.macro'
 import { authService } from '../auth/auth.service'
-import { userService } from './user.service'
-import {
-  userParamsSchema,
-  userResponseSchema,
-  createUserBodySchema,
-  updateUserBodySchema,
-  errorResponseSchema,
-  successResponseSchema,
-  listUsersResponseSchema,
-  changeUserPasswordBodySchema,
-} from './user.schemas'
-
-const toErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === 'P2002') return 'Username already exists'
-    if (error.code === 'P2025') return 'User not found'
-  }
-
-  if (error instanceof Error) return error.message
-  return fallback
-}
+import { AppError } from '@/server/app-error.class'
+import { userParamsSchema, userResponseSchema } from './user.schemas'
+import { UNKNOWN_ERR, UNAUTHENTICATED, VALIDATION_ERR } from '@/constants'
+import { createUserBodySchema, updateUserBodySchema } from './user.schemas'
+import { errorResponseSchema, successResponseSchema } from './user.schemas'
+import { ACCOUNT_FROZEN, AUTH_COOKIE, DUPLICATE_ENTRY, NOT_FOUND } from '@/constants'
+import { listUsersResponseSchema, changeUserPasswordBodySchema } from './user.schemas'
 
 const requireAuthUser = async (token: string | null | undefined) => {
   return authService.getAuthenticatedUserFromToken(token)
@@ -31,23 +16,19 @@ const requireAuthUser = async (token: string | null | undefined) => {
 
 export const userController = new Elysia({ prefix: '/users' })
   .use(AuthMacro)
-  .get(
-    '/',
-    async () => userService.listUsers(),
-    {
-      auth: { protected: true },
-      response: {
-        200: listUsersResponseSchema,
-        401: errorResponseSchema,
-      },
-    }
-  )
+  .get('/', async () => userService.listUsers(), {
+    auth: { protected: true },
+    response: {
+      200: listUsersResponseSchema,
+      401: errorResponseSchema,
+    },
+  })
   .get(
     '/:id',
     async ({ params }) => {
       const user = await userService.getUserById(params.id)
       if (!user) {
-        return status(404, { error: 'User not found' })
+        return status(404, { code: NOT_FOUND, error: 'User not found' })
       }
       return user
     },
@@ -58,6 +39,7 @@ export const userController = new Elysia({ prefix: '/users' })
         200: userResponseSchema,
         401: errorResponseSchema,
         404: errorResponseSchema,
+        409: errorResponseSchema,
       },
     }
   )
@@ -66,131 +48,217 @@ export const userController = new Elysia({ prefix: '/users' })
     async ({ body, cookie }) => {
       const userCount = await userService.countUsers()
       if (userCount > 0) {
-        const token = typeof cookie[AUTH_COOKIE].value === 'string' ? cookie[AUTH_COOKIE].value : null
+        const token =
+          typeof cookie[AUTH_COOKIE].value === 'string' ? cookie[AUTH_COOKIE].value : null
         const authUser = await requireAuthUser(token)
         if (!authUser) {
-          return status(401, { error: 'Unauthorized' })
+          return status(401, { code: UNAUTHENTICATED, error: 'Unauthorized' })
         }
       }
 
-      try {
-        return await userService.createUser(body)
-      } catch (error) {
-        return status(400, { error: toErrorMessage(error, 'Failed to create user') })
-      }
+      return userService.createUser(body)
     },
     {
       body: createUserBodySchema,
+      error: ({ error }) => {
+        const message = error instanceof Error ? error.message : UNKNOWN_ERR
+        if (!(error instanceof AppError)) {
+          return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
+        }
+
+        switch (error.code) {
+          case NOT_FOUND:
+            return status(404, { code: NOT_FOUND, error: message })
+          case DUPLICATE_ENTRY:
+            return status(409, { code: DUPLICATE_ENTRY, error: message })
+          case ACCOUNT_FROZEN:
+            return status(403, { code: ACCOUNT_FROZEN, error: message })
+          case UNAUTHENTICATED:
+            return status(401, { code: UNAUTHENTICATED, error: message })
+          case VALIDATION_ERR:
+            return status(400, { code: VALIDATION_ERR, error: message })
+          default:
+            return status(400, { code: VALIDATION_ERR, error: 'Failed to create user' })
+        }
+      },
       response: {
         200: userResponseSchema,
         400: errorResponseSchema,
         401: errorResponseSchema,
+        403: errorResponseSchema,
+        404: errorResponseSchema,
+        409: errorResponseSchema,
       },
     }
   )
-  .patch(
-    '/:id',
-    async ({ body, params }) => {
-      try {
-        return await userService.updateUser(params.id, body)
-      } catch (error) {
-        const message = toErrorMessage(error, 'Failed to update user')
-        const code = message === 'User not found' ? 404 : 400
-        return status(code, { error: message })
+  .patch('/:id', async ({ body, params }) => userService.updateUser(params.id, body), {
+    auth: { protected: true },
+    body: updateUserBodySchema,
+    params: userParamsSchema,
+    error: ({ error }) => {
+      const message = error instanceof Error ? error.message : UNKNOWN_ERR
+      if (!(error instanceof AppError)) {
+        return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
+      }
+
+      switch (error.code) {
+        case NOT_FOUND:
+          return status(404, { code: NOT_FOUND, error: message })
+        case DUPLICATE_ENTRY:
+          return status(409, { code: DUPLICATE_ENTRY, error: message })
+        case ACCOUNT_FROZEN:
+          return status(403, { code: ACCOUNT_FROZEN, error: message })
+        case UNAUTHENTICATED:
+          return status(401, { code: UNAUTHENTICATED, error: message })
+        case VALIDATION_ERR:
+          return status(400, { code: VALIDATION_ERR, error: message })
+        default:
+          return status(400, { code: VALIDATION_ERR, error: 'Failed to update user' })
       }
     },
-    {
-      auth: { protected: true },
-      body: updateUserBodySchema,
-      params: userParamsSchema,
-      response: {
-        200: userResponseSchema,
-        400: errorResponseSchema,
-        401: errorResponseSchema,
-        404: errorResponseSchema,
-      },
-    }
-  )
-  .delete(
-    '/:id',
-    async ({ params }) => {
-      try {
-        return await userService.deleteUser(params.id)
-      } catch (error) {
-        const message = toErrorMessage(error, 'Failed to delete user')
-        const code = message === 'User not found' ? 404 : 400
-        return status(code, { error: message })
+    response: {
+      200: userResponseSchema,
+      400: errorResponseSchema,
+      401: errorResponseSchema,
+      403: errorResponseSchema,
+      404: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  })
+  .delete('/:id', async ({ params }) => userService.deleteUser(params.id), {
+    auth: { protected: true },
+    params: userParamsSchema,
+    error: ({ error }) => {
+      const message = error instanceof Error ? error.message : UNKNOWN_ERR
+      if (!(error instanceof AppError)) {
+        return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
+      }
+
+      switch (error.code) {
+        case NOT_FOUND:
+          return status(404, { code: NOT_FOUND, error: message })
+        case DUPLICATE_ENTRY:
+          return status(409, { code: DUPLICATE_ENTRY, error: message })
+        case ACCOUNT_FROZEN:
+          return status(403, { code: ACCOUNT_FROZEN, error: message })
+        case UNAUTHENTICATED:
+          return status(401, { code: UNAUTHENTICATED, error: message })
+        case VALIDATION_ERR:
+          return status(400, { code: VALIDATION_ERR, error: message })
+        default:
+          return status(400, { code: VALIDATION_ERR, error: 'Failed to delete user' })
       }
     },
-    {
-      auth: { protected: true },
-      params: userParamsSchema,
-      response: {
-        200: successResponseSchema,
-        400: errorResponseSchema,
-        401: errorResponseSchema,
-        404: errorResponseSchema,
-      },
-    }
-  )
+    response: {
+      200: successResponseSchema,
+      400: errorResponseSchema,
+      401: errorResponseSchema,
+      403: errorResponseSchema,
+      404: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  })
   .post(
     '/:id/change-password',
-    async ({ body, params }) => {
-      try {
-        return await userService.changeUserPassword(params.id, body.newPassword)
-      } catch (error) {
-        const message = toErrorMessage(error, 'Failed to change password')
-        const code = message === 'User not found' ? 404 : 400
-        return status(code, { error: message })
-      }
-    },
+    async ({ body, params }) => userService.changeUserPassword(params.id, body.newPassword),
     {
       auth: { protected: true },
       body: changeUserPasswordBodySchema,
       params: userParamsSchema,
+      error: ({ error }) => {
+        const message = error instanceof Error ? error.message : UNKNOWN_ERR
+        if (!(error instanceof AppError)) {
+          return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
+        }
+
+        switch (error.code) {
+          case NOT_FOUND:
+            return status(404, { code: NOT_FOUND, error: message })
+          case DUPLICATE_ENTRY:
+            return status(409, { code: DUPLICATE_ENTRY, error: message })
+          case ACCOUNT_FROZEN:
+            return status(403, { code: ACCOUNT_FROZEN, error: message })
+          case UNAUTHENTICATED:
+            return status(401, { code: UNAUTHENTICATED, error: message })
+          case VALIDATION_ERR:
+            return status(400, { code: VALIDATION_ERR, error: message })
+          default:
+            return status(400, { code: VALIDATION_ERR, error: 'Failed to change password' })
+        }
+      },
       response: {
         200: successResponseSchema,
         400: errorResponseSchema,
         401: errorResponseSchema,
+        403: errorResponseSchema,
         404: errorResponseSchema,
+        409: errorResponseSchema,
       },
     }
   )
-  .post(
-    '/:id/freeze',
-    async ({ params }) => {
-      try {
-        return await userService.freezeUser(params.id)
-      } catch (error) {
-        return status(404, { error: toErrorMessage(error, 'User not found') })
+  .post('/:id/freeze', async ({ params }) => userService.freezeUser(params.id), {
+    auth: { protected: true },
+    params: userParamsSchema,
+    error: ({ error }) => {
+      const message = error instanceof Error ? error.message : UNKNOWN_ERR
+      if (!(error instanceof AppError)) {
+        return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
+      }
+
+      switch (error.code) {
+        case NOT_FOUND:
+          return status(404, { code: NOT_FOUND, error: message })
+        case DUPLICATE_ENTRY:
+          return status(409, { code: DUPLICATE_ENTRY, error: message })
+        case ACCOUNT_FROZEN:
+          return status(403, { code: ACCOUNT_FROZEN, error: message })
+        case UNAUTHENTICATED:
+          return status(401, { code: UNAUTHENTICATED, error: message })
+        case VALIDATION_ERR:
+          return status(400, { code: VALIDATION_ERR, error: message })
+        default:
+          return status(400, { code: VALIDATION_ERR, error: 'Failed to freeze user' })
       }
     },
-    {
-      auth: { protected: true },
-      params: userParamsSchema,
-      response: {
-        200: userResponseSchema,
-        401: errorResponseSchema,
-        404: errorResponseSchema,
-      },
-    }
-  )
-  .post(
-    '/:id/unfreeze',
-    async ({ params }) => {
-      try {
-        return await userService.unfreezeUser(params.id)
-      } catch (error) {
-        return status(404, { error: toErrorMessage(error, 'User not found') })
+    response: {
+      200: userResponseSchema,
+      400: errorResponseSchema,
+      401: errorResponseSchema,
+      403: errorResponseSchema,
+      404: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  })
+  .post('/:id/unfreeze', async ({ params }) => userService.unfreezeUser(params.id), {
+    auth: { protected: true },
+    params: userParamsSchema,
+    error: ({ error }) => {
+      const message = error instanceof Error ? error.message : UNKNOWN_ERR
+      if (!(error instanceof AppError)) {
+        return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
+      }
+
+      switch (error.code) {
+        case NOT_FOUND:
+          return status(404, { code: NOT_FOUND, error: message })
+        case DUPLICATE_ENTRY:
+          return status(409, { code: DUPLICATE_ENTRY, error: message })
+        case ACCOUNT_FROZEN:
+          return status(403, { code: ACCOUNT_FROZEN, error: message })
+        case UNAUTHENTICATED:
+          return status(401, { code: UNAUTHENTICATED, error: message })
+        case VALIDATION_ERR:
+          return status(400, { code: VALIDATION_ERR, error: message })
+        default:
+          return status(400, { code: VALIDATION_ERR, error: 'Failed to unfreeze user' })
       }
     },
-    {
-      auth: { protected: true },
-      params: userParamsSchema,
-      response: {
-        200: userResponseSchema,
-        401: errorResponseSchema,
-        404: errorResponseSchema,
-      },
-    }
-  )
+    response: {
+      200: userResponseSchema,
+      400: errorResponseSchema,
+      401: errorResponseSchema,
+      403: errorResponseSchema,
+      404: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  })

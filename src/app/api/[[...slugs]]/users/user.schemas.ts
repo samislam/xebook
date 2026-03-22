@@ -40,5 +40,6 @@ export const successResponseSchema = z.object({
 })
 
 export const errorResponseSchema = z.object({
+  code: z.string(),
   error: z.string(),
 })

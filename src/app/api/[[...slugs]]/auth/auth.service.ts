@@ -1,19 +1,16 @@
-import { prismaClient } from '@/lib/prisma/prisma-client'
+import { AppError } from '@/server/app-error.class'
 import { verifyAuthToken } from '@/lib/auth/auth-token'
 import { verifyPasswordHash } from '@/lib/auth/password'
+import { prismaClient } from '@/lib/prisma/prisma-client'
+import { ACCOUNT_FROZEN, INCORRECT_CREDENTIALS } from '@/constants'
 
 export class AuthService {
   async validateCredentials(username: string, password: string) {
-    const user = await prismaClient.user.findUnique({
-      where: { username },
-    })
-
-    if (!user) return null
-    if (user.isFrozen) return 'frozen' as const
-
+    const user = await prismaClient.user.findUnique({ where: { username } })
+    if (!user) throw new AppError(INCORRECT_CREDENTIALS, 'Invalid username or password')
+    if (user.isFrozen) throw new AppError(ACCOUNT_FROZEN, 'User is frozen')
     const isValid = await verifyPasswordHash(password, user.passwordHash)
-    if (!isValid) return null
-
+    if (!isValid) throw new AppError(INCORRECT_CREDENTIALS, 'Invalid username or password')
     return user
   }
 
@@ -27,9 +24,8 @@ export class AuthService {
     const user = await prismaClient.user.findUnique({
       where: { id: userId },
     })
-
-    if (!user || user.isFrozen) return null
-
+    if (!user) return null
+    if (user.isFrozen) throw new AppError(ACCOUNT_FROZEN, 'User is frozen')
     return user
   }
 }

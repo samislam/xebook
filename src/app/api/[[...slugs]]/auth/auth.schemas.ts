@@ -11,5 +11,6 @@ export const loginSuccessResponseSchema = z.object({
 })
 
 export const loginFailureResponseSchema = z.object({
+  code: z.string(),
   error: z.string(),
 })
