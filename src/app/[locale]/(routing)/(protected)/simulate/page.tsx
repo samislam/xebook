@@ -1,18 +1,12 @@
 import { SimulateProvider } from './hooks/use-simulate'
 import { AppTabs } from '@/app/[locale]/composables/app-tabs'
-import { ThemeSwitcher } from '@/components/common/theme-switcher'
 import { ResultsCard } from '@/app/[locale]/composables/results-card'
 import { CalculateForm } from '@/app/[locale]/composables/calculate-form'
-import { LogoutIconButton } from '@/components/common/logout-icon-button'
 
 const SimulatePage = () => {
   return (
     <SimulateProvider>
       <div className="relative h-screen w-full p-4 pt-16">
-        <div className="absolute top-4 right-4 flex items-center gap-2">
-          <LogoutIconButton />
-          <ThemeSwitcher />
-        </div>
         <div className="mb-4 w-full">
           <AppTabs />
         </div>

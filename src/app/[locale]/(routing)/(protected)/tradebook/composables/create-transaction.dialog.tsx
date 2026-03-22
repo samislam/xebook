@@ -63,8 +63,11 @@ export const CreateTransactionDialog = ({
     },
   })
 
-  const { isPending: isCreateTransactionPending, mutateAsync: createTransaction, reset } =
-    createTransactionMutation
+  const {
+    isPending: isCreateTransactionPending,
+    mutateAsync: createTransaction,
+    reset,
+  } = createTransactionMutation
 
   useEffect(() => {
     if (!open) {

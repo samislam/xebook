@@ -4,20 +4,13 @@ import { PlusIcon, RotateCcwIcon } from 'lucide-react'
 import { Button } from '@/components/ui/shadcnui/button'
 import { AppTabs } from '@/app/[locale]/composables/app-tabs'
 import { useTradebookPage } from '../hooks/use-tradebook-page'
-import { ThemeSwitcher } from '@/components/common/theme-switcher'
 import { CycleToolbar } from '@/app/[locale]/composables/cycle-toolbar'
-import { LogoutIconButton } from '@/components/common/logout-icon-button'
 
 export const TradebookHeader = () => {
   const tradebook = useTradebookPage()
 
   return (
     <>
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <LogoutIconButton />
-        <ThemeSwitcher />
-      </div>
-
       <div className="mb-6 w-full">
         <AppTabs />
       </div>
