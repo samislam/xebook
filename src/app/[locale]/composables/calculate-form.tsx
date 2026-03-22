@@ -8,7 +8,7 @@ import { Toggle } from '@/components/ui/shadcnui/toggle'
 import { Button } from '@/components/ui/shadcnui/button'
 import { InputField } from '@/components/common/input-field'
 import { NumberInput } from '@/components/common/number-input'
-import { useSimulate } from '../(routing)/simulate/hooks/use-simulate'
+import { useSimulate } from '../(routing)/(protected)/simulate/hooks/use-simulate'
 import { calculateFormSchema, type CalculateFormValues } from './calculate-form.schema'
 
 export const CalculateForm = () => {

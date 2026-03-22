@@ -2,7 +2,7 @@
 
 import numeral from 'numeral'
 import { TradesTable } from './trades-table'
-import { useSimulate } from '../(routing)/simulate/hooks/use-simulate'
+import { useSimulate } from '../(routing)/(protected)/simulate/hooks/use-simulate'
 
 const formatUsd = (value: number) => numeral(value).format('0,0.00')
 const formatTry = (value: number) => numeral(value).format('0,0')

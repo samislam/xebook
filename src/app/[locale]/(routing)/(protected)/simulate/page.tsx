@@ -1,8 +1,8 @@
-import { AppTabs } from '../../composables/app-tabs'
-import { ResultsCard } from '../../composables/results-card'
-import { SimulateProvider } from './providers/simulate-provider'
-import { CalculateForm } from '../../composables/calculate-form'
+import { SimulateProvider } from './hooks/use-simulate'
+import { AppTabs } from '@/app/[locale]/composables/app-tabs'
 import { ThemeSwitcher } from '@/components/common/theme-switcher'
+import { ResultsCard } from '@/app/[locale]/composables/results-card'
+import { CalculateForm } from '@/app/[locale]/composables/calculate-form'
 import { LogoutIconButton } from '@/components/common/logout-icon-button'
 
 const SimulatePage = () => {
