@@ -1,28 +1,30 @@
-import { t } from 'elysia'
+import { z } from 'zod'
 
-export const transactionTypeSchema = t.Union([
-  t.Literal('BUY'),
-  t.Literal('SELL'),
-  t.Literal('CYCLE_SETTLEMENT'),
-  t.Literal('DEPOSIT_BALANCE_CORRECTION'),
-  t.Literal('WITHDRAW_BALANCE_CORRECTION'),
+export const transactionTypeSchema = z.union([
+  z.literal('BUY'),
+  z.literal('SELL'),
+  z.literal('CYCLE_SETTLEMENT'),
+  z.literal('DEPOSIT_BALANCE_CORRECTION'),
+  z.literal('WITHDRAW_BALANCE_CORRECTION'),
 ])
-export const transactionCurrencySchema = t.Union([t.Literal('USD'), t.Literal('TRY')])
-export const cycleNameSchema = t.String({ minLength: 1, maxLength: 100 })
-const optionalPartyTextSchema = t.Optional(t.String({ minLength: 1, maxLength: 255 }))
-const optionalDescriptionSchema = t.Optional(t.String({ minLength: 1, maxLength: 2000 }))
 
-export const createBuyTransactionBodySchema = t.Object({
+export const transactionCurrencySchema = z.union([z.literal('USD'), z.literal('TRY')])
+export const cycleNameSchema = z.string().trim().min(1).max(100)
+const optionalPartyTextSchema = z.string().trim().min(1).max(255).optional()
+const optionalDescriptionSchema = z.string().trim().min(1).max(2000).optional()
+const dateTimeStringSchema = z.string().datetime()
+
+export const createBuyTransactionBodySchema = z.object({
   cycle: cycleNameSchema,
-  type: t.Literal('BUY'),
-  transactionValue: t.Number({ minimum: 0.0000001 }),
+  type: z.literal('BUY'),
+  transactionValue: z.number().positive(),
   transactionCurrency: transactionCurrencySchema,
-  usdTryRateAtBuy: t.Optional(t.Number({ minimum: 0.0000001 })),
-  occurredAt: t.Optional(t.String({ format: 'date-time' })),
-  amountReceived: t.Number({ minimum: 0.0000001 }),
-  commissionPercent: t.Optional(t.Number({ minimum: 0 })),
+  usdTryRateAtBuy: z.number().positive().optional(),
+  occurredAt: dateTimeStringSchema.optional(),
+  amountReceived: z.number().positive(),
+  commissionPercent: z.number().min(0).optional(),
   description: optionalDescriptionSchema,
-  payingWithCash: t.Optional(t.Boolean()),
+  payingWithCash: z.boolean().optional(),
   senderInstitution: optionalPartyTextSchema,
   senderIban: optionalPartyTextSchema,
   senderName: optionalPartyTextSchema,
@@ -31,16 +33,16 @@ export const createBuyTransactionBodySchema = t.Object({
   recipientName: optionalPartyTextSchema,
 })
 
-export const createSellTransactionBodySchema = t.Object({
+export const createSellTransactionBodySchema = z.object({
   cycle: cycleNameSchema,
-  type: t.Literal('SELL'),
-  occurredAt: t.Optional(t.String({ format: 'date-time' })),
-  amountSold: t.Number({ minimum: 0.0000001 }),
-  amountReceived: t.Optional(t.Number({ minimum: 0.0000001 })),
-  pricePerUnit: t.Optional(t.Number({ minimum: 0.0000001 })),
-  commissionPercent: t.Optional(t.Number({ minimum: 0 })),
+  type: z.literal('SELL'),
+  occurredAt: dateTimeStringSchema.optional(),
+  amountSold: z.number().positive(),
+  amountReceived: z.number().positive().optional(),
+  pricePerUnit: z.number().positive().optional(),
+  commissionPercent: z.number().min(0).optional(),
   description: optionalDescriptionSchema,
-  payingWithCash: t.Optional(t.Boolean()),
+  payingWithCash: z.boolean().optional(),
   senderInstitution: optionalPartyTextSchema,
   senderIban: optionalPartyTextSchema,
   senderName: optionalPartyTextSchema,
@@ -49,32 +51,32 @@ export const createSellTransactionBodySchema = t.Object({
   recipientName: optionalPartyTextSchema,
 })
 
-export const createCycleSettlementTransactionBodySchema = t.Object({
-  type: t.Literal('CYCLE_SETTLEMENT'),
+export const createCycleSettlementTransactionBodySchema = z.object({
+  type: z.literal('CYCLE_SETTLEMENT'),
   fromCycle: cycleNameSchema,
   toCycle: cycleNameSchema,
-  occurredAt: t.Optional(t.String({ format: 'date-time' })),
-  amount: t.Number({ minimum: 0.0000001 }),
+  occurredAt: dateTimeStringSchema.optional(),
+  amount: z.number().positive(),
   description: optionalDescriptionSchema,
 })
 
-export const createDepositBalanceCorrectionBodySchema = t.Object({
+export const createDepositBalanceCorrectionBodySchema = z.object({
   cycle: cycleNameSchema,
-  type: t.Literal('DEPOSIT_BALANCE_CORRECTION'),
-  occurredAt: t.Optional(t.String({ format: 'date-time' })),
-  amount: t.Number({ minimum: 0.0000001 }),
+  type: z.literal('DEPOSIT_BALANCE_CORRECTION'),
+  occurredAt: dateTimeStringSchema.optional(),
+  amount: z.number().positive(),
   description: optionalDescriptionSchema,
 })
 
-export const createWithdrawBalanceCorrectionBodySchema = t.Object({
+export const createWithdrawBalanceCorrectionBodySchema = z.object({
   cycle: cycleNameSchema,
-  type: t.Literal('WITHDRAW_BALANCE_CORRECTION'),
-  occurredAt: t.Optional(t.String({ format: 'date-time' })),
-  amount: t.Number({ minimum: 0.0000001 }),
+  type: z.literal('WITHDRAW_BALANCE_CORRECTION'),
+  occurredAt: dateTimeStringSchema.optional(),
+  amount: z.number().positive(),
   description: optionalDescriptionSchema,
 })
 
-export const createTransactionBodySchema = t.Union([
+export const createTransactionBodySchema = z.union([
   createBuyTransactionBodySchema,
   createSellTransactionBodySchema,
   createCycleSettlementTransactionBodySchema,
@@ -82,107 +84,107 @@ export const createTransactionBodySchema = t.Union([
   createWithdrawBalanceCorrectionBodySchema,
 ])
 
-export const updateTransactionBodySchema = t.Union([
+export const updateTransactionBodySchema = z.union([
   createBuyTransactionBodySchema,
   createSellTransactionBodySchema,
   createDepositBalanceCorrectionBodySchema,
   createWithdrawBalanceCorrectionBodySchema,
 ])
 
-export const transactionResponseSchema = t.Object({
-  id: t.String(),
-  cycle: t.String(),
+export const transactionResponseSchema = z.object({
+  id: z.string(),
+  cycle: z.string(),
   type: transactionTypeSchema,
-  occurredAt: t.String({ format: 'date-time' }),
-  createdAt: t.String({ format: 'date-time' }),
-  updatedAt: t.String({ format: 'date-time' }),
-  transactionValue: t.Union([t.Number(), t.Null()]),
-  transactionCurrency: t.Union([transactionCurrencySchema, t.Null()]),
-  usdTryRateAtBuy: t.Union([t.Number(), t.Null()]),
-  amountReceived: t.Number(),
-  amountSold: t.Union([t.Number(), t.Null()]),
-  pricePerUnit: t.Union([t.Number(), t.Null()]),
+  occurredAt: dateTimeStringSchema,
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
+  transactionValue: z.number().nullable(),
+  transactionCurrency: transactionCurrencySchema.nullable(),
+  usdTryRateAtBuy: z.number().nullable(),
+  amountReceived: z.number(),
+  amountSold: z.number().nullable(),
+  pricePerUnit: z.number().nullable(),
   receivedCurrency: transactionCurrencySchema,
-  commissionPercent: t.Union([t.Number(), t.Null()]),
-  effectiveRateTry: t.Union([t.Number(), t.Null()]),
-  description: t.Union([t.String(), t.Null()]),
-  payingWithCash: t.Boolean(),
-  senderInstitution: t.Union([t.String(), t.Null()]),
-  senderIban: t.Union([t.String(), t.Null()]),
-  senderName: t.Union([t.String(), t.Null()]),
-  recipientInstitution: t.Union([t.String(), t.Null()]),
-  recipientIban: t.Union([t.String(), t.Null()]),
-  recipientName: t.Union([t.String(), t.Null()]),
+  commissionPercent: z.number().nullable(),
+  effectiveRateTry: z.number().nullable(),
+  description: z.string().nullable(),
+  payingWithCash: z.boolean(),
+  senderInstitution: z.string().nullable(),
+  senderIban: z.string().nullable(),
+  senderName: z.string().nullable(),
+  recipientInstitution: z.string().nullable(),
+  recipientIban: z.string().nullable(),
+  recipientName: z.string().nullable(),
 })
 
-export const listTransactionsResponseSchema = t.Array(transactionResponseSchema)
+export const listTransactionsResponseSchema = z.array(transactionResponseSchema)
 
-export const createCycleBodySchema = t.Object({
+export const createCycleBodySchema = z.object({
   name: cycleNameSchema,
 })
 
-export const createInstitutionBodySchema = t.Object({
-  name: t.String({ minLength: 1, maxLength: 255 }),
-  icon: t.Optional(t.Any()),
+export const createInstitutionBodySchema = z.object({
+  name: z.string().trim().min(1).max(255),
+  icon: z.any().optional(),
 })
 
-export const institutionResponseSchema = t.Object({
-  id: t.String(),
-  name: t.String(),
-  iconFileName: t.Union([t.String(), t.Null()]),
-  createdAt: t.String({ format: 'date-time' }),
-  updatedAt: t.String({ format: 'date-time' }),
+export const institutionResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  iconFileName: z.string().nullable(),
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
 })
 
-export const listInstitutionsResponseSchema = t.Array(institutionResponseSchema)
+export const listInstitutionsResponseSchema = z.array(institutionResponseSchema)
 
-export const cycleParamsSchema = t.Object({
-  id: t.String(),
+export const cycleParamsSchema = z.object({
+  id: z.string(),
 })
 
-export const transactionParamsSchema = t.Object({
-  id: t.String(),
+export const transactionParamsSchema = z.object({
+  id: z.string(),
 })
 
-export const institutionIconParamsSchema = t.Object({
-  fileName: t.String({ minLength: 1 }),
+export const institutionIconParamsSchema = z.object({
+  fileName: z.string().min(1),
 })
 
-export const updateCycleBodySchema = t.Object({
+export const updateCycleBodySchema = z.object({
   name: cycleNameSchema,
 })
 
-export const cycleResponseSchema = t.Object({
-  id: t.String(),
+export const cycleResponseSchema = z.object({
+  id: z.string(),
   name: cycleNameSchema,
-  createdAt: t.String({ format: 'date-time' }),
-  updatedAt: t.String({ format: 'date-time' }),
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
 })
 
-export const listCyclesResponseSchema = t.Array(cycleResponseSchema)
+export const listCyclesResponseSchema = z.array(cycleResponseSchema)
 
-export const deleteCycleResponseSchema = t.Object({
-  success: t.Boolean(),
+export const deleteCycleResponseSchema = z.object({
+  success: z.boolean(),
 })
 
-export const resetCycleResponseSchema = t.Object({
-  success: t.Boolean(),
-  deletedTransactions: t.Number(),
+export const resetCycleResponseSchema = z.object({
+  success: z.boolean(),
+  deletedTransactions: z.number(),
 })
 
-export const undoLastTransactionResponseSchema = t.Object({
-  success: t.Boolean(),
-  deletedTransactionId: t.String(),
+export const undoLastTransactionResponseSchema = z.object({
+  success: z.boolean(),
+  deletedTransactionId: z.string(),
 })
 
-export const deleteTransactionResponseSchema = t.Object({
-  success: t.Boolean(),
-  deletedTransactionId: t.String(),
+export const deleteTransactionResponseSchema = z.object({
+  success: z.boolean(),
+  deletedTransactionId: z.string(),
 })
 
-export const createTransactionResponseSchema = t.Union([
+export const createTransactionResponseSchema = z.union([
   transactionResponseSchema,
-  t.Array(transactionResponseSchema),
+  z.array(transactionResponseSchema),
 ])
 
 export const updateTransactionResponseSchema = transactionResponseSchema

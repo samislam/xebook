@@ -1,4 +1,5 @@
-import { Elysia, t } from 'elysia'
+import { z } from 'zod'
+import { Elysia } from 'elysia'
 import { cycleParamsSchema } from './transaction.schemas'
 import { transactionService } from './transaction.service'
 import { cycleResponseSchema } from './transaction.schemas'
@@ -20,8 +21,8 @@ import { deleteTransactionResponseSchema } from './transaction.schemas'
 import { updateTransactionResponseSchema } from './transaction.schemas'
 import { undoLastTransactionResponseSchema } from './transaction.schemas'
 
-const errorResponseSchema = t.Object({
-  error: t.String(),
+const errorResponseSchema = z.object({
+  error: z.string(),
 })
 
 export const transactionController = new Elysia({ prefix: '/transactions' })
