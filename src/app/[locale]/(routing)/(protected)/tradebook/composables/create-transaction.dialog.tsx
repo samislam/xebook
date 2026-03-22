@@ -63,12 +63,15 @@ export const CreateTransactionDialog = ({
     },
   })
 
+  const { isPending: isCreateTransactionPending, mutateAsync: createTransaction, reset } =
+    createTransactionMutation
+
   useEffect(() => {
     if (!open) {
       setErrorMessage(null)
-      createTransactionMutation.reset()
+      reset()
     }
-  }, [open, createTransactionMutation])
+  }, [open, reset])
 
   const handleSubmit = async () => {
     setErrorMessage(null)
@@ -92,7 +95,7 @@ export const CreateTransactionDialog = ({
       return
     }
 
-    await createTransactionMutation.mutateAsync(result.payload)
+    await createTransaction(result.payload)
   }
 
   return (
@@ -105,8 +108,8 @@ export const CreateTransactionDialog = ({
         <TransactionForm
           values={values}
           errorMessage={errorMessage}
-          isSubmitting={createTransactionMutation.isPending}
-          submitLabel={createTransactionMutation.isPending ? 'Creating...' : 'Create'}
+          isSubmitting={isCreateTransactionPending}
+          submitLabel={isCreateTransactionPending ? 'Creating...' : 'Create'}
           cycleOptions={cycleOptions}
           institutionOptions={institutionOptions}
           availableCycleUsdtBalance={availableCycleUsdtBalance}

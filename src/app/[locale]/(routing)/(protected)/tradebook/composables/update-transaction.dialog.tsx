@@ -79,13 +79,16 @@ export const UpdateTransactionDialog = ({
     },
   })
 
+  const { isPending: isUpdateTransactionPending, mutateAsync: updateTransaction, reset } =
+    updateTransactionMutation
+
   useEffect(() => {
     if (!open) {
       setErrorMessage(null)
       closeUnsafeEditConfirmDialog()
-      updateTransactionMutation.reset()
+      reset()
     }
-  }, [closeUnsafeEditConfirmDialog, open, updateTransactionMutation])
+  }, [closeUnsafeEditConfirmDialog, open, reset])
 
   const submitUpdate = async (forceUnsafeEdit = false) => {
     setErrorMessage(null)
@@ -119,7 +122,7 @@ export const UpdateTransactionDialog = ({
       return
     }
 
-    await updateTransactionMutation.mutateAsync(result.payload)
+    await updateTransaction(result.payload)
   }
 
   return (
@@ -133,8 +136,8 @@ export const UpdateTransactionDialog = ({
           <TransactionForm
             values={values}
             errorMessage={errorMessage}
-            isSubmitting={updateTransactionMutation.isPending}
-            submitLabel={updateTransactionMutation.isPending ? 'Saving...' : 'Save changes'}
+            isSubmitting={isUpdateTransactionPending}
+            submitLabel={isUpdateTransactionPending ? 'Saving...' : 'Save changes'}
             cycleOptions={cycleOptions}
             institutionOptions={institutionOptions}
             availableCycleUsdtBalance={availableCycleUsdtBalance}
@@ -174,16 +177,16 @@ export const UpdateTransactionDialog = ({
               type="button"
               variant="outline"
               onClick={closeUnsafeEditConfirmDialog}
-              disabled={updateTransactionMutation.isPending}
+              disabled={isUpdateTransactionPending}
             >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={() => void submitUpdate(true)}
-              disabled={updateTransactionMutation.isPending}
+              disabled={isUpdateTransactionPending}
             >
-              {updateTransactionMutation.isPending ? 'Saving...' : 'Save anyway'}
+              {isUpdateTransactionPending ? 'Saving...' : 'Save anyway'}
             </Button>
           </DialogFooter>
         </DialogContent>
