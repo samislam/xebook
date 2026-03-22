@@ -2,7 +2,7 @@
 
 import type { TradebookTransactionFormValues } from '../schemas/transaction-form.schema'
 import { formatUsdt } from '../tradebook.utils'
-import type { CycleOption, TradeTransaction, TransactionType } from '../tradebook.types'
+import type { CycleOption, TradeTransaction } from '../tradebook.types'
 
 export type TradeTransactionRecord = Pick<
   TradeTransaction,

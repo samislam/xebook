@@ -25,6 +25,9 @@ import { useDeleteTransactionConfirmationDialogStore } from './use-delete-transa
 const transactionsQueryKey = ['tradebook', 'transactions'] as const
 const cyclesQueryKey = ['tradebook', 'cycles'] as const
 const institutionsQueryKey = ['tradebook', 'institutions'] as const
+const EMPTY_TRANSACTIONS: TradeTransaction[] = []
+const EMPTY_INSTITUTIONS: Institution[] = []
+const EMPTY_CYCLES: TradeCycle[] = []
 
 const getApiErrorMessage = (error: { value?: unknown } | null, fallback: string) =>
   (error?.value as { error?: string } | null)?.error ?? fallback
@@ -152,9 +155,9 @@ export const useTradebookPageState = () => {
     },
   })
 
-  const transactions = transactionsQuery.data ?? []
-  const institutions = institutionsQuery.data ?? []
-  const cycles = cyclesQuery.data ?? []
+  const transactions = transactionsQuery.data ?? EMPTY_TRANSACTIONS
+  const institutions = institutionsQuery.data ?? EMPTY_INSTITUTIONS
+  const cycles = cyclesQuery.data ?? EMPTY_CYCLES
   const isLoading =
     transactionsQuery.isLoading || cyclesQuery.isLoading || institutionsQuery.isLoading
 
