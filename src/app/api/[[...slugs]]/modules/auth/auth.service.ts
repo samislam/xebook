@@ -1,5 +1,5 @@
-import { AppError } from '@/server/app-error.class'
 import { verifyAuthToken } from '@/lib/auth/auth-token'
+import { AppError } from '../../classes/app-error.class'
 import { verifyPasswordHash } from '@/lib/auth/password'
 import { prismaClient } from '@/lib/prisma/prisma-client'
 import { ACCOUNT_FROZEN, INCORRECT_CREDENTIALS } from '@/constants'

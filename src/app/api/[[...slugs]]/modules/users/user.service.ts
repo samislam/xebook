@@ -1,6 +1,6 @@
 import { Prisma } from '@/generated/prisma'
-import { AppError } from '@/server/app-error.class'
 import { NOT_FOUND, VALIDATION_ERR } from '@/constants'
+import { AppError } from '../../classes/app-error.class'
 import { prismaClient } from '@/lib/prisma/prisma-client'
 import { DUPLICATE_ENTRY, INCORRECT_CREDENTIALS } from '@/constants'
 import { hashPassword, verifyPasswordHash } from '@/lib/auth/password'

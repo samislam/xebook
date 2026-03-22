@@ -1,6 +1,6 @@
 import { Elysia, status } from 'elysia'
 import { authService } from '../auth/auth.service'
-import { AppError } from '@/server/app-error.class'
+import { AppError } from '../../classes/app-error.class'
 import { ACCOUNT_FROZEN, AUTH_COOKIE, UNAUTHENTICATED } from '@/constants'
 
 export const AuthMacro = new Elysia({ name: 'protected.macro' }).macro({

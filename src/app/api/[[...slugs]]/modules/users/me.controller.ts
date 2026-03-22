@@ -1,11 +1,11 @@
 import { Elysia, status } from 'elysia'
+import { AUTH_COOKIE } from '@/constants'
 import { userService } from './user.service'
+import { UNAUTHENTICATED } from '@/constants'
 import { AuthMacro } from '../macros/auth.macro'
 import { authService } from '../auth/auth.service'
-import { AppError } from '@/server/app-error.class'
-import { NOT_FOUND, AUTH_COOKIE, ACCOUNT_FROZEN, UNKNOWN_ERR } from '@/constants'
+import { resourceErrorClassifier } from '../../utils/resource-error-classifier'
 import { successResponseSchema, changeMyPasswordBodySchema } from './user.schemas'
-import { VALIDATION_ERR, UNAUTHENTICATED, INCORRECT_CREDENTIALS } from '@/constants'
 import { userResponseSchema, updateUserBodySchema, errorResponseSchema } from './user.schemas'
 
 const requireAuthUser = async (token: string | null | undefined) => {
@@ -50,31 +50,15 @@ export const meController = new Elysia()
     {
       auth: { protected: true },
       body: updateUserBodySchema,
-      error: ({ error }) => {
-        const message = error instanceof Error ? error.message : UNKNOWN_ERR
-        if (!(error instanceof AppError)) {
-          return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
-        }
-
-        switch (error.code) {
-          case INCORRECT_CREDENTIALS:
-            return status(401, { code: INCORRECT_CREDENTIALS, error: message })
-          case ACCOUNT_FROZEN:
-            return status(403, { code: ACCOUNT_FROZEN, error: message })
-          case NOT_FOUND:
-            return status(404, { code: NOT_FOUND, error: message })
-          case VALIDATION_ERR:
-            return status(400, { code: VALIDATION_ERR, error: message })
-          default:
-            return status(400, { code: VALIDATION_ERR, error: 'Failed to update profile' })
-        }
-      },
+      error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to update profile'),
       response: {
         200: userResponseSchema,
         400: errorResponseSchema,
         401: errorResponseSchema,
         403: errorResponseSchema,
         404: errorResponseSchema,
+        422: errorResponseSchema,
+        500: errorResponseSchema,
       },
     }
   )
@@ -90,31 +74,15 @@ export const meController = new Elysia()
     {
       auth: { protected: true },
       body: changeMyPasswordBodySchema,
-      error: ({ error }) => {
-        const message = error instanceof Error ? error.message : UNKNOWN_ERR
-        if (!(error instanceof AppError)) {
-          return status(500, { code: UNKNOWN_ERR, error: UNKNOWN_ERR })
-        }
-
-        switch (error.code) {
-          case INCORRECT_CREDENTIALS:
-            return status(401, { code: INCORRECT_CREDENTIALS, error: message })
-          case ACCOUNT_FROZEN:
-            return status(403, { code: ACCOUNT_FROZEN, error: message })
-          case NOT_FOUND:
-            return status(404, { code: NOT_FOUND, error: message })
-          case VALIDATION_ERR:
-            return status(400, { code: VALIDATION_ERR, error: message })
-          default:
-            return status(400, { code: VALIDATION_ERR, error: 'Failed to change password' })
-        }
-      },
+      error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to change password'),
       response: {
         200: successResponseSchema,
         400: errorResponseSchema,
         401: errorResponseSchema,
         403: errorResponseSchema,
         404: errorResponseSchema,
+        422: errorResponseSchema,
+        500: errorResponseSchema,
       },
     }
   )

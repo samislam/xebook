@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/shadcnui/input'
 import { useRouter } from '@/lib/next-intl/navigation'
 import { Button } from '@/components/ui/shadcnui/button'
 import { InputField } from '@/components/common/input-field'
-import type { LoginValues } from '@/app/api/[[...slugs]]/auth/auth.schemas'
+import type { LoginValues } from '@/app/api/[[...slugs]]/modules/auth/auth.schemas'
 
 export const LoginForm = () => {
   const router = useRouter()
