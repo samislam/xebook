@@ -1,9 +1,11 @@
 import { Elysia } from 'elysia'
 import { authModule } from './auth/auth.module'
+import { userModule } from './users/user.module'
 import { transactionModule } from './transactions/transaction.module'
 
 export const app = new Elysia({ prefix: '/api' }) //
   .use(authModule)
+  .use(userModule)
   .use(transactionModule)
 
 export const GET = app.fetch

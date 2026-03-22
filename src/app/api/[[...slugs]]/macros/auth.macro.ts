@@ -1,17 +1,16 @@
 import { Elysia, status } from 'elysia'
-import { UNKNOWN_ERR } from '@/constants'
+import { AUTH_COOKIE } from '@/constants'
+import { authService } from '../auth/auth.service'
 
 export const AuthMacro = new Elysia({ name: 'protected.macro' }).macro({
   auth: (policy?: AuthPolicy) => ({
-    resolve: async ({}) => {
+    beforeHandle: async ({ cookie }) => {
       if (!policy?.protected) return
-      // you logic for protection and authorization ...
-      const $USER = { name: 'example user' }
-      return { $USER }
-    },
-    error: ({ error }) => {
-      console.log(error)
-      return status(500, { error: UNKNOWN_ERR })
+      const token = typeof cookie[AUTH_COOKIE].value === 'string' ? cookie[AUTH_COOKIE].value : null
+      const user = await authService.getAuthenticatedUserFromToken(token)
+      if (!user) {
+        return status(401, { error: 'Unauthorized' })
+      }
     },
   }),
 })

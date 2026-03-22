@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
 import { AUTH_COOKIE } from './constants'
+import { serverEnv } from './server/server-env'
+import { pageDefs } from './config/pages.config'
 import createi18nMiddleware from 'next-intl/middleware'
 import { verifyAuthToken } from './lib/auth/auth-token'
-import { pageDefs } from './config/pages.config'
 import { middlewareStack, pipe } from 'nextjs-middleware-stack'
 import { appRoutingDef } from './lib/next-intl/app-routing-def'
 
@@ -10,10 +11,11 @@ export default middlewareStack<NextRequest>([
   pipe(
     () => true,
     async (req) => {
-      const jwtSecret = process.env.AUTH_JWT_SECRET
+      const jwtSecret = serverEnv.AUTH_JWT_SECRET
       const authToken = req.cookies.get(AUTH_COOKIE)?.value
-      const isAuthenticated =
-        !!jwtSecret && !!authToken ? await verifyAuthToken(authToken, jwtSecret) : false
+      const authPayload =
+        !!jwtSecret && !!authToken ? await verifyAuthToken(authToken, jwtSecret) : null
+      const isAuthenticated = Boolean(authPayload?.sub)
       const isLoginPage = req.nextUrl.pathname === pageDefs.login.href
 
       if (!isAuthenticated && !isLoginPage) {
@@ -26,7 +28,6 @@ export default middlewareStack<NextRequest>([
       }
     }
   ),
-  // ... your other middlewares
   // i18n middleware last
   pipe(() => true, createi18nMiddleware(appRoutingDef)),
 ])

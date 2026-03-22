@@ -1,13 +1,15 @@
-import { t } from 'elysia'
+import { z } from 'zod'
 
-export const loginBodySchema = t.Object({
-  password: t.String({ minLength: 1 }),
+export const loginBodySchema = z.object({
+  username: z.string().trim().toLowerCase().min(1).max(100),
+  password: z.string().trim().min(1).max(255),
+})
+export type LoginValues = z.infer<typeof loginBodySchema>
+
+export const loginSuccessResponseSchema = z.object({
+  success: z.literal(true),
 })
 
-export const loginSuccessResponseSchema = t.Object({
-  success: t.Literal(true),
-})
-
-export const loginFailureResponseSchema = t.Object({
-  error: t.String(),
+export const loginFailureResponseSchema = z.object({
+  error: z.string(),
 })

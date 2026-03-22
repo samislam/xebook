@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { LogOut } from 'lucide-react'
 import { appApi } from '@/lib/elysia/eden'
+import { pageDefs } from '@/config/pages.config'
+import { useRouter } from '@/lib/next-intl/navigation'
 import { Button } from '@/components/ui/shadcnui/button'
 import { Dialog } from '@/components/ui/shadcnui/dialog'
 import { DialogTitle } from '@/components/ui/shadcnui/dialog'
@@ -11,7 +13,6 @@ import { DialogFooter } from '@/components/ui/shadcnui/dialog'
 import { DialogTrigger } from '@/components/ui/shadcnui/dialog'
 import { DialogContent } from '@/components/ui/shadcnui/dialog'
 import { DialogDescription } from '@/components/ui/shadcnui/dialog'
-import { useRouter } from '@/lib/next-intl/navigation'
 
 export const LogoutIconButton = () => {
   const router = useRouter()
@@ -25,7 +26,7 @@ export const LogoutIconButton = () => {
     } finally {
       setIsSubmitting(false)
       setIsOpen(false)
-      router.push('/login')
+      router.push(pageDefs.login.href)
     }
   }
 
