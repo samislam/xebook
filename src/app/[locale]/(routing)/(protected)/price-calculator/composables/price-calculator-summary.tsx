@@ -30,18 +30,24 @@ export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculat
       ? {
           label: 'Effective USDT price',
           value: formatMaybe(summary.effectivePricePerUsdt.SYP, '£'),
+          secondaryValue: formatMaybe(summary.effectivePricePerUsdt.USD, '$'),
+          tertiaryValue: formatMaybe(summary.effectivePricePerUsdt.TRY, '₺'),
           hint: 'Based on your entered SYP costs and current USDT holdings.',
         }
       : summary.effectivePricePerUsdt.TRY !== null
         ? {
             label: 'Effective USDT price',
             value: formatMaybe(summary.effectivePricePerUsdt.TRY, '₺'),
+            secondaryValue: formatMaybe(summary.effectivePricePerUsdt.USD, '$'),
+            tertiaryValue: formatMaybe(summary.effectivePricePerUsdt.SYP, '£'),
             hint: 'Based on your entered TRY costs and current USDT holdings.',
           }
         : summary.effectivePricePerUsdt.USD !== null
           ? {
               label: 'Effective USDT price',
               value: formatMaybe(summary.effectivePricePerUsdt.USD, '$'),
+              secondaryValue: null,
+              tertiaryValue: null,
               hint: 'Based on your entered USD costs and current USDT holdings.',
             }
           : null
@@ -69,6 +75,16 @@ export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculat
               <p className="mt-1 text-4xl font-black text-emerald-700 dark:text-emerald-300">
                 {primaryEffectivePrice.value}
               </p>
+              {primaryEffectivePrice.secondaryValue ? (
+                <p className="mt-2 text-lg font-bold text-emerald-700/80 dark:text-emerald-300/80">
+                  {primaryEffectivePrice.secondaryValue}
+                </p>
+              ) : null}
+              {primaryEffectivePrice.tertiaryValue ? (
+                <p className="mt-1 text-lg font-bold text-emerald-700/70 dark:text-emerald-300/70">
+                  {primaryEffectivePrice.tertiaryValue}
+                </p>
+              ) : null}
               <p className="text-muted-foreground mt-2 text-sm">{primaryEffectivePrice.hint}</p>
             </div>
 
@@ -109,6 +125,13 @@ export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculat
                     valueClassName={profitClass(summary.targetSell.targetProfitAmount)}
                   />
                 </div>
+                {summary.targetSell.targetProfitAmount === null &&
+                  summary.targetSell.currency !== 'SYP' && (
+                    <p className="text-muted-foreground mt-3 text-sm">
+                      Fill the matching market rate to compute profit and capital in{' '}
+                      {summary.targetSell.currency}.
+                    </p>
+                  )}
               </div>
             )}
           </div>

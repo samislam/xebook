@@ -307,18 +307,10 @@ export const calculatePriceCalculatorSummary = (
   let previousCapital: number | null = null
   let newCapital: number | null = null
 
-  if (targetUsdtAmount > 0 && costPerUsdtInSellCurrency !== null) {
-    const costTotal = costPerUsdtInSellCurrency * targetUsdtAmount
-    previousCapital = costTotal
-
+  if (targetUsdtAmount > 0) {
     if (targetExitMode === 'PRICE' && targetSellPricePerUsdt !== null) {
       netPricePerUsdt = targetSellPricePerUsdt
       netTotal = netPricePerUsdt * targetUsdtAmount
-      newCapital = netTotal
-      targetProfitAmount = netTotal - costTotal
-      const denominator = costTotal === 0 ? null : costTotal
-      const computedProfitPercent =
-        denominator !== null ? (targetProfitAmount / denominator) * 100 : null
 
       const retention = 1 - targetSellFeePercent / 100
       if (retention > 0) {
@@ -326,54 +318,70 @@ export const calculatePriceCalculatorSummary = (
         grossPricePerUsdt = grossTotal / targetUsdtAmount
       }
 
-      if (targetSellCurrency === 'USD' && netPricePerUsdt !== null) {
-        premiumPercent = (netPricePerUsdt - 1) * 100
-      } else if (
-        targetSellCurrency !== 'USDT' &&
-        netPricePerUsdt !== null &&
-        effectivePricePerUsdt.USD !== null
-      ) {
-        const usdEquivalent =
-          targetSellCurrency === 'SYP'
-            ? rates.usdToSyp
-              ? netPricePerUsdt / rates.usdToSyp
-              : null
-            : targetSellCurrency === 'TRY'
-              ? rates.usdToTry
-                ? netPricePerUsdt / rates.usdToTry
+      if (costPerUsdtInSellCurrency !== null) {
+        const costTotal = costPerUsdtInSellCurrency * targetUsdtAmount
+        previousCapital = costTotal
+        newCapital = netTotal
+        targetProfitAmount = netTotal - costTotal
+        const denominator = costTotal === 0 ? null : costTotal
+        const computedProfitPercent =
+          denominator !== null ? (targetProfitAmount / denominator) * 100 : null
+
+        if (targetSellCurrency === 'USD' && netPricePerUsdt !== null) {
+          premiumPercent = (netPricePerUsdt - 1) * 100
+        } else if (
+          targetSellCurrency !== 'USDT' &&
+          netPricePerUsdt !== null &&
+          effectivePricePerUsdt.USD !== null
+        ) {
+          const usdEquivalent =
+            targetSellCurrency === 'SYP'
+              ? rates.usdToSyp
+                ? netPricePerUsdt / rates.usdToSyp
                 : null
-              : netPricePerUsdt
+              : targetSellCurrency === 'TRY'
+                ? rates.usdToTry
+                  ? netPricePerUsdt / rates.usdToTry
+                  : null
+                : netPricePerUsdt
 
-        premiumPercent = usdEquivalent !== null ? (usdEquivalent - 1) * 100 : null
-      }
+          premiumPercent = usdEquivalent !== null ? (usdEquivalent - 1) * 100 : null
+        }
 
-      return {
-        currentHoldings: holdings,
-        usdtHoldings,
-        includedExpenseVector: includedExpenses,
-        usdtCostVector,
-        effectivePricePerUsdt,
-        weightedUsdBridgeRate,
-        targetSell: {
-          currency: targetSellCurrency,
-          exitMode: targetExitMode,
-          usdtAmount: targetUsdtAmount,
-          profitPercent: computedProfitPercent,
-          previousCapital,
-          newCapital,
-          netPricePerUsdt,
-          grossPricePerUsdt,
-          netTotal,
-          grossTotal,
-          targetProfitAmount,
-          premiumPercent,
-        },
-        previews,
-        warnings,
+        return {
+          currentHoldings: holdings,
+          usdtHoldings,
+          includedExpenseVector: includedExpenses,
+          usdtCostVector,
+          effectivePricePerUsdt,
+          weightedUsdBridgeRate,
+          targetSell: {
+            currency: targetSellCurrency,
+            exitMode: targetExitMode,
+            usdtAmount: targetUsdtAmount,
+            profitPercent: computedProfitPercent,
+            previousCapital,
+            newCapital,
+            netPricePerUsdt,
+            grossPricePerUsdt,
+            netTotal,
+            grossTotal,
+            targetProfitAmount,
+            premiumPercent,
+          },
+          previews,
+          warnings,
+        }
       }
     }
 
-    if (targetExitMode === 'PERCENT' && targetProfitPercent !== null) {
+    if (
+      targetExitMode === 'PERCENT' &&
+      targetProfitPercent !== null &&
+      costPerUsdtInSellCurrency !== null
+    ) {
+      const costTotal = costPerUsdtInSellCurrency * targetUsdtAmount
+      previousCapital = costTotal
       netTotal = costTotal * (1 + targetProfitPercent / 100)
       newCapital = netTotal
       netPricePerUsdt = netTotal / targetUsdtAmount

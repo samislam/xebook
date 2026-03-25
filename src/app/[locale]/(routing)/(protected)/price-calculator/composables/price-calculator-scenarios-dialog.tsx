@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/shadcnui/button'
 import {
   Dialog,
@@ -35,8 +36,10 @@ export const PriceCalculatorScenariosDialog = ({
   onLoad,
   onDelete,
 }: Props) => {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button type="button" variant="outline">
           <FolderOpen className="mr-2 h-4 w-4" />
@@ -78,7 +81,10 @@ export const PriceCalculatorScenariosDialog = ({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => onLoad(scenario.id)}
+                    onClick={() => {
+                      onLoad(scenario.id)
+                      setOpen(false)
+                    }}
                     disabled={loadingScenarioId === scenario.id}
                   >
                     {loadingScenarioId === scenario.id ? (

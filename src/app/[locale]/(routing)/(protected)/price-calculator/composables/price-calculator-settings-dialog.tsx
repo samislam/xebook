@@ -80,6 +80,26 @@ export const PriceCalculatorSettingsDialog = ({
 
             <InputField
               control={control}
+              name="targetSellCurrency"
+              label="Target sell currency"
+              render={(field) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SELL_CURRENCIES.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+
+            <InputField
+              control={control}
               name="targetExitMode"
               label="Exit mode"
               render={(field) => (
@@ -95,15 +115,6 @@ export const PriceCalculatorSettingsDialog = ({
                     ))}
                   </SelectContent>
                 </Select>
-              )}
-            />
-
-            <InputField
-              control={control}
-              name="usdToTryRate"
-              label="USD -> TRY market rate"
-              render={(field) => (
-                <NumberInput {...field} value={field.value ?? ''} onChange={field.onChange} />
               )}
             />
 
@@ -127,46 +138,6 @@ export const PriceCalculatorSettingsDialog = ({
                 )}
               />
             )}
-
-            <InputField
-              control={control}
-              name="targetSellFeePercent"
-              label="Sell fee %"
-              render={(field) => (
-                <NumberInput {...field} value={field.value ?? ''} onChange={field.onChange} />
-              )}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <InputField
-              control={control}
-              name="targetSellCurrency"
-              label="Target sell currency"
-              render={(field) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SELL_CURRENCIES.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-
-            <InputField
-              control={control}
-              name="usdToSypRate"
-              label="USD -> SYP market rate"
-              render={(field) => (
-                <NumberInput {...field} value={field.value ?? ''} onChange={field.onChange} />
-              )}
-            />
 
             <InputField
               control={control}
@@ -194,6 +165,35 @@ export const PriceCalculatorSettingsDialog = ({
                     </button>
                   }
                 />
+              )}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <InputField
+              control={control}
+              name="usdToSypRate"
+              label="USD -> SYP market rate"
+              render={(field) => (
+                <NumberInput {...field} value={field.value ?? ''} onChange={field.onChange} />
+              )}
+            />
+
+            <InputField
+              control={control}
+              name="usdToTryRate"
+              label="USD -> TRY market rate"
+              render={(field) => (
+                <NumberInput {...field} value={field.value ?? ''} onChange={field.onChange} />
+              )}
+            />
+
+            <InputField
+              control={control}
+              name="targetSellFeePercent"
+              label="Sell fee %"
+              render={(field) => (
+                <NumberInput {...field} value={field.value ?? ''} onChange={field.onChange} />
               )}
             />
 

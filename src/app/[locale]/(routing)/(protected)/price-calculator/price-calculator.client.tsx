@@ -24,12 +24,7 @@ import { PriceCalculatorSettingsDialog } from './composables/price-calculator-se
 import { PriceCalculatorScenariosDialog } from './composables/price-calculator-scenarios-dialog'
 
 const getApiErrorMessage = (error: unknown, fallback: string) => {
-  if (
-    typeof error === 'object' &&
-    error &&
-    'error' in error &&
-    typeof error.error === 'string'
-  ) {
+  if (typeof error === 'object' && error && 'error' in error && typeof error.error === 'string') {
     return error.error
   }
 
