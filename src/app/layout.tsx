@@ -12,7 +12,7 @@ import { getStaticData } from '@/lib/tolgee/tolgee-shared'
 import { TolgeeNextProvider } from '@/lib/tolgee/tolgee-client'
 import { Toaster } from '@/components/ui/shadcnui/sonner'
 import { MetadataGenerateFn } from '@/lib/next/metadata-generator'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { EnvironmentRibbon } from '@/components/common/environment-ribbon'
 import { TolgeeLoadingScreen } from '@/components/common/tolgee-loading-screen'
 import { TanstackQueryProvider } from '@/lib/tanstack-query/tanstack-query-provider'
@@ -40,7 +40,7 @@ export default async function RootLayout(props: LayoutProps) {
                   <EnvironmentRibbon environment="none" />
                   {children}
                   <Toaster />
-                  <ReactQueryDevtools initialIsOpen={false} />
+                  {/* <ReactQueryDevtools initialIsOpen={false} /> */}
                   <TolgeeLoadingScreen />
                   <ClientPlugger />
                 </NuqsAdapter>
