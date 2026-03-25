@@ -1,6 +1,6 @@
 import { pageDefs } from '@/config/pages.config'
 import { Link } from '@/lib/next-intl/navigation'
-import { WandSparkles, BookOpenText } from 'lucide-react'
+import { WandSparkles, BookOpenText, Calculator } from 'lucide-react'
 
 const Page = () => {
   return (
@@ -10,7 +10,7 @@ const Page = () => {
         <p className="text-muted-foreground mt-2 text-sm">Choose where you want to go.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Link
           href={pageDefs.simulate.href}
           className="group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-500/40 hover:shadow-md"
@@ -25,6 +25,14 @@ const Page = () => {
         >
           <BookOpenText className="mb-8 h-10 w-10 text-emerald-500 transition group-hover:scale-105" />
           <p className="text-xl font-bold">{pageDefs.tradebook.title}</p>
+        </Link>
+
+        <Link
+          href={pageDefs.priceCalculator.href}
+          className="group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-500/40 hover:shadow-md"
+        >
+          <Calculator className="mb-8 h-10 w-10 text-amber-500 transition group-hover:scale-105" />
+          <p className="text-xl font-bold">{pageDefs.priceCalculator.title}</p>
         </Link>
       </div>
     </div>

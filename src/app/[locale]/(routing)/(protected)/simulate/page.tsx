@@ -6,7 +6,7 @@ import { CalculateForm } from '@/app/[locale]/composables/calculate-form'
 const SimulatePage = () => {
   return (
     <SimulateProvider>
-      <div className="relative h-screen w-full p-4 pt-16">
+      <div className="relative min-h-full w-full min-w-0">
         <div className="mb-4 w-full">
           <AppTabs />
         </div>

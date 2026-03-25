@@ -6,7 +6,7 @@ import { TradebookPageProvider } from './providers/tradebook-page.provider'
 const TradebookPage = () => {
   return (
     <TradebookPageProvider>
-      <div className="relative h-screen w-full p-4 pt-16">
+      <div className="relative min-h-full w-full min-w-0">
         <TradebookHeader />
         <div className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
           <TradebookDialogs />

@@ -19,6 +19,12 @@ export const pageDefs = {
     description: 'Simulation page',
     icon: 'mdi:mdiChartTimelineVariant',
   },
+  priceCalculator: {
+    href: '/price-calculator',
+    title: 'Price calculator',
+    description: 'Price calculator page',
+    icon: 'mdi:mdiCalculatorVariant',
+  },
   login: {
     href: '/login',
     title: 'Login',
