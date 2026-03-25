@@ -9,6 +9,8 @@ const formatNumber = (value: number, maximumFractionDigits = 2) =>
   })
 
 const formatMaybe = (value: number | null, prefix = '') => (value === null ? '-' : `${prefix}${formatNumber(value)}`)
+const formatMaybeWithDigits = (value: number | null, prefix = '', maximumFractionDigits = 2) =>
+  value === null ? '-' : `${prefix}${formatNumber(value, maximumFractionDigits)}`
 const currencyPrefix: Record<'SYP' | 'TRY' | 'USD' | 'USDT', string> = {
   SYP: '£',
   TRY: '₺',
@@ -136,7 +138,10 @@ export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculat
           <MetricCard label="Effective price in USD" value={formatMaybe(summary.effectivePricePerUsdt.USD, '$')} />
           <MetricCard label="Effective price in SYP" value={formatMaybe(summary.effectivePricePerUsdt.SYP, '£')} />
           <MetricCard label="Effective price in TRY" value={formatMaybe(summary.effectivePricePerUsdt.TRY, '₺')} />
-          <MetricCard label="USD bridge USDT rate" value={formatMaybe(summary.weightedUsdBridgeRate, '$')} />
+          <MetricCard
+            label="USD bridge USDT rate"
+            value={formatMaybeWithDigits(summary.weightedUsdBridgeRate, '$', 4)}
+          />
         </div>
 
         <div className="mt-5 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-sm dark:border-white/10 dark:bg-white/5">
