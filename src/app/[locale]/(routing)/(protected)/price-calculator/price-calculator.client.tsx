@@ -47,17 +47,20 @@ export const PriceCalculatorClient = () => {
   })
 
   const values = useWatch({ control: form.control })
-  const normalizedValues: PriceCalculatorValues = {
-    ...PRICE_CALCULATOR_DEFAULT_VALUES,
-    ...values,
-    steps:
-      values.steps?.map((step, index) => ({
-        ...PRICE_CALCULATOR_DEFAULT_VALUES.steps[
-          Math.min(index, PRICE_CALCULATOR_DEFAULT_VALUES.steps.length - 1)
-        ],
-        ...step,
-      })) ?? PRICE_CALCULATOR_DEFAULT_VALUES.steps,
-  }
+  const normalizedValues = useMemo<PriceCalculatorValues>(
+    () => ({
+      ...PRICE_CALCULATOR_DEFAULT_VALUES,
+      ...values,
+      steps:
+        values.steps?.map((step, index) => ({
+          ...PRICE_CALCULATOR_DEFAULT_VALUES.steps[
+            Math.min(index, PRICE_CALCULATOR_DEFAULT_VALUES.steps.length - 1)
+          ],
+          ...step,
+        })) ?? PRICE_CALCULATOR_DEFAULT_VALUES.steps,
+    }),
+    [values]
+  )
   const summary = useMemo(
     () => calculatePriceCalculatorSummary(normalizedValues),
     [normalizedValues]

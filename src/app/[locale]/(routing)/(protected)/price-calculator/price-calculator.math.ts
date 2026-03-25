@@ -112,14 +112,6 @@ const createInventory = (): Record<Currency, Lot[]> => ({
   USDT: [],
 })
 
-const addNativeLot = (inventory: Record<Currency, Lot[]>, currency: Currency, amount: number) => {
-  if (amount <= 0) return
-  inventory[currency].push({
-    amount,
-    cost: createNativeCost(currency, amount),
-  })
-}
-
 const consumeLots = (
   inventory: Record<Currency, Lot[]>,
   currency: Currency,

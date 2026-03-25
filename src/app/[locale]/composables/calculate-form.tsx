@@ -1,34 +1,100 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import { Form } from '@/components/ui/shadcnui/form'
-import { calculateExchangeLoops } from './calculate'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Toggle } from '@/components/ui/shadcnui/toggle'
+import { useEffect, useMemo } from 'react'
+import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/shadcnui/button'
+import { Form } from '@/components/ui/shadcnui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/shadcnui/select'
+import { Toggle } from '@/components/ui/shadcnui/toggle'
 import { InputField } from '@/components/common/input-field'
 import { NumberInput } from '@/components/common/number-input'
 import { useSimulate } from '../(routing)/(protected)/simulate/hooks/use-simulate'
+import { calculateExchangeLoops } from './calculate'
 import { calculateFormSchema, type CalculateFormValues } from './calculate-form.schema'
+
+const DEFAULT_VALUES: CalculateFormValues = {
+  localCurrency: 'TRY',
+  exchangeRate: '',
+  exchangeTaxPercent: '',
+  useExchangeRate: true,
+  applyCommission: false,
+  startingCapital: '',
+  buyCommission: '',
+  sellRate: '',
+  loopCount: '',
+  compoundProfits: true,
+}
+
+const LOCAL_CURRENCY_META = {
+  TRY: {
+    label: 'TRY',
+    name: 'TRY',
+    symbol: '₺',
+  },
+  SYP: {
+    label: 'SYP',
+    name: 'SYP',
+    symbol: '£',
+  },
+} as const
 
 export const CalculateForm = () => {
   const { setResult } = useSimulate()
+  const searchParams = useSearchParams()
+  const paramsKey = searchParams.toString()
+  const queryDefaults = useMemo<CalculateFormValues>(() => {
+    const localCurrency = searchParams.get('localCurrency')
+    const useExchangeRate = searchParams.get('useExchangeRate')
+    const applyCommission = searchParams.get('applyCommission')
+    const compoundProfits = searchParams.get('compoundProfits')
+
+    return {
+      ...DEFAULT_VALUES,
+      localCurrency: localCurrency === 'SYP' ? 'SYP' : 'TRY',
+      exchangeRate: searchParams.get('exchangeRate') ?? DEFAULT_VALUES.exchangeRate,
+      exchangeTaxPercent:
+        searchParams.get('exchangeTaxPercent') ?? DEFAULT_VALUES.exchangeTaxPercent,
+      startingCapital: searchParams.get('startingCapital') ?? DEFAULT_VALUES.startingCapital,
+      buyCommission: searchParams.get('buyCommission') ?? DEFAULT_VALUES.buyCommission,
+      sellRate: searchParams.get('sellRate') ?? DEFAULT_VALUES.sellRate,
+      loopCount: searchParams.get('loopCount') ?? DEFAULT_VALUES.loopCount,
+      useExchangeRate:
+        useExchangeRate === null ? DEFAULT_VALUES.useExchangeRate : useExchangeRate !== 'false',
+      applyCommission:
+        applyCommission === null ? DEFAULT_VALUES.applyCommission : applyCommission === 'true',
+      compoundProfits:
+        compoundProfits === null ? DEFAULT_VALUES.compoundProfits : compoundProfits === 'true',
+    }
+  }, [searchParams])
   const form = useForm<CalculateFormValues>({
     resolver: zodResolver(calculateFormSchema),
-    defaultValues: {
-      exchangeRate: '',
-      exchangeTaxPercent: '',
-      useExchangeRate: true,
-      applyCommission: false,
-      startingCapital: '',
-      buyCommission: '',
-      sellRate: '',
-      loopCount: '',
-      compoundProfits: true,
-    },
+    defaultValues: queryDefaults,
   })
-  const isBuyingUsdtInLira = form.watch('useExchangeRate')
+
+  useEffect(() => {
+    form.reset(queryDefaults)
+
+    if (searchParams.get('autoCalculate') !== 'true') return
+
+    try {
+      setResult(calculateExchangeLoops(queryDefaults))
+    } catch {
+      setResult(null)
+    }
+  }, [form, queryDefaults, paramsKey, searchParams, setResult])
+
+  const isBuyingUsdtInLocalCurrency = form.watch('useExchangeRate')
   const applyCommission = form.watch('applyCommission')
+  const localCurrency = form.watch('localCurrency') === 'SYP' ? 'SYP' : DEFAULT_VALUES.localCurrency
+  const localCurrencyMeta = LOCAL_CURRENCY_META[localCurrency]
   const startingCapital = Number.parseFloat(form.watch('startingCapital'))
   const exchangeRate = Number.parseFloat(form.watch('exchangeRate'))
   const exchangeTaxPercent = Number.parseFloat(form.watch('exchangeTaxPercent'))
@@ -39,11 +105,11 @@ export const CalculateForm = () => {
     exchangeTaxPercent >= 0
       ? exchangeRate * (1 + exchangeTaxPercent / 100)
       : null
-  const approximateTryTotal =
+  const approximateLocalTotal =
     effectiveExchangeRate !== null && Number.isFinite(startingCapital) && startingCapital > 0
       ? startingCapital * effectiveExchangeRate
       : null
-  const approximateTryAtBaseRate =
+  const approximateLocalAtBaseRate =
     Number.isFinite(exchangeRate) &&
     exchangeRate > 0 &&
     Number.isFinite(startingCapital) &&
@@ -80,8 +146,28 @@ export const CalculateForm = () => {
 
           <InputField
             control={form.control}
+            name="localCurrency"
+            label="Local currency"
+            render={(field) => (
+              <Select
+                value={field.value ?? queryDefaults.localCurrency}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select local currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TRY">TRY</SelectItem>
+                  <SelectItem value="SYP">SYP</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+
+          <InputField
+            control={form.control}
             name="useExchangeRate"
-            label="Buying USDT in lira or dollars"
+            label={`Buying USDT in ${localCurrencyMeta.name} or dollars`}
             className="my-1! flex items-center justify-start gap-3 space-y-0 **:data-[slot=label]:pointer-events-none"
             render={(field) => (
               <Toggle
@@ -90,12 +176,14 @@ export const CalculateForm = () => {
                 variant="outline"
                 className="min-w-24 justify-center border-0 bg-yellow-500 text-black hover:bg-yellow-600 data-[state=on]:bg-yellow-500 data-[state=on]:text-black data-[state=on]:hover:bg-yellow-600"
               >
-                {field.value ? 'Buying USDT in lira' : 'Buying USDT in dollars'}
+                {field.value
+                  ? `Buying USDT in ${localCurrencyMeta.name}`
+                  : 'Buying USDT in dollars'}
               </Toggle>
             )}
           />
 
-          {isBuyingUsdtInLira && (
+          {isBuyingUsdtInLocalCurrency && (
             <InputField
               control={form.control}
               name="applyCommission"
@@ -134,12 +222,12 @@ export const CalculateForm = () => {
           <InputField
             control={form.control}
             name="exchangeRate"
-            label="Exchange rate (TRY)"
+            label={`Exchange rate (${localCurrencyMeta.label})`}
             description={
-              approximateTryAtBaseRate === null ? null : (
+              approximateLocalAtBaseRate === null ? null : (
                 <span className="text-xs">
-                  ≈ ₺
-                  {approximateTryAtBaseRate.toLocaleString('en-US', {
+                  ≈ {localCurrencyMeta.symbol}
+                  {approximateLocalAtBaseRate.toLocaleString('en-US', {
                     maximumFractionDigits: 2,
                     minimumFractionDigits: 2,
                   })}
@@ -153,12 +241,14 @@ export const CalculateForm = () => {
                 onBlur={field.onBlur}
                 ref={field.ref}
                 onChange={(value) => field.onChange(value)}
-                startAction={<span className="text-muted-foreground text-sm">₺</span>}
+                startAction={
+                  <span className="text-muted-foreground text-sm">{localCurrencyMeta.symbol}</span>
+                }
               />
             )}
           />
 
-          {!isBuyingUsdtInLira && (
+          {!isBuyingUsdtInLocalCurrency && (
             <InputField
               control={form.control}
               name="exchangeTaxPercent"
@@ -166,12 +256,16 @@ export const CalculateForm = () => {
               description={
                 effectiveExchangeRate === null ? null : (
                   <span className="text-xs">
-                    Effective rate: ₺{effectiveExchangeRate.toFixed(2)}
-                    {approximateTryTotal !== null
-                      ? ` | ≈ ₺${approximateTryTotal.toLocaleString('en-US', {
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,
-                        })}`
+                    Effective rate: {localCurrencyMeta.symbol}
+                    {effectiveExchangeRate.toFixed(2)}
+                    {approximateLocalTotal !== null
+                      ? ` | ≈ ${localCurrencyMeta.symbol}${approximateLocalTotal.toLocaleString(
+                          'en-US',
+                          {
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }
+                        )}`
                       : ''}
                   </span>
                 )
@@ -190,7 +284,7 @@ export const CalculateForm = () => {
             />
           )}
 
-          {(!isBuyingUsdtInLira || applyCommission) && (
+          {(!isBuyingUsdtInLocalCurrency || applyCommission) && (
             <InputField
               control={form.control}
               name="buyCommission"
@@ -212,7 +306,7 @@ export const CalculateForm = () => {
           <InputField
             control={form.control}
             name="sellRate"
-            label="Sell full USDT for (TRY)"
+            label={`Sell full USDT for (${localCurrencyMeta.label})`}
             render={(field) => (
               <NumberInput
                 name={field.name}
@@ -220,7 +314,9 @@ export const CalculateForm = () => {
                 onBlur={field.onBlur}
                 ref={field.ref}
                 onChange={(value) => field.onChange(value)}
-                startAction={<span className="text-muted-foreground text-sm">₺</span>}
+                startAction={
+                  <span className="text-muted-foreground text-sm">{localCurrencyMeta.symbol}</span>
+                }
               />
             )}
           />

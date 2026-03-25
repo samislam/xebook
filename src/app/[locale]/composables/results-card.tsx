@@ -5,10 +5,17 @@ import { TradesTable } from './trades-table'
 import { useSimulate } from '../(routing)/(protected)/simulate/hooks/use-simulate'
 
 const formatUsd = (value: number) => numeral(value).format('0,0.00')
-const formatTry = (value: number) => numeral(value).format('0,0')
+const formatLocal = (value: number) => numeral(value).format('0,0')
+
+const LOCAL_CURRENCY_META = {
+  TRY: { label: 'TRY', symbol: '₺' },
+  SYP: { label: 'SYP', symbol: '£' },
+} as const
 
 export const ResultsCard = () => {
   const { result } = useSimulate()
+  const localCurrency = result?.localCurrency ?? 'TRY'
+  const localCurrencyMeta = LOCAL_CURRENCY_META[localCurrency]
   const isProfit = (result?.totalProfitUsd ?? 0) >= 0
   const profitPct =
     result && result.startingUsd > 0 ? (result.totalProfitUsd / result.startingUsd) * 100 : 0
@@ -27,7 +34,11 @@ export const ResultsCard = () => {
         <div className="space-y-4 text-sm">
           <div className="grid grid-cols-2 gap-2">
             <p className="text-muted-foreground">Mode</p>
-            <p>{result.mode === 'buy-in-lira' ? 'Buying in lira' : 'Buying in dollars'}</p>
+            <p>
+              {result.mode === 'buy-in-lira'
+                ? `Buying in ${localCurrencyMeta.label}`
+                : 'Buying in dollars'}
+            </p>
 
             <p className="text-muted-foreground">Starting capital</p>
             <p>${formatUsd(result.startingUsd)}</p>
@@ -35,7 +46,8 @@ export const ResultsCard = () => {
             <p className="text-muted-foreground">Final capital</p>
             <p className="flex items-center gap-1">
               <span>
-                ${formatUsd(result.finalUsd)} / ₺{formatTry(result.finalTry)}
+                ${formatUsd(result.finalUsd)} / {localCurrencyMeta.symbol}
+                {formatLocal(result.finalTry)}
               </span>
               <span
                 className={
@@ -67,7 +79,8 @@ export const ResultsCard = () => {
                 {isProfit ? '▲' : '▼'}
               </span>
               <span>
-                ${formatUsd(result.totalProfitUsd)} / ₺{formatTry(result.totalProfitTry)}
+                ${formatUsd(result.totalProfitUsd)} / {localCurrencyMeta.symbol}
+                {formatLocal(result.totalProfitTry)}
               </span>
             </div>
           </div>
@@ -75,7 +88,11 @@ export const ResultsCard = () => {
       )}
 
       <div className={result ? 'mt-4' : 'mt-3'}>
-        <TradesTable data={result?.loops ?? []} initialRows={10} />
+        <TradesTable
+          data={result?.loops ?? []}
+          initialRows={10}
+          localCurrency={result?.localCurrency ?? 'TRY'}
+        />
       </div>
     </section>
   )

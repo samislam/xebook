@@ -13,6 +13,7 @@ const isPositiveInteger = (value: string) => {
 
 export const calculateFormSchema = z
   .object({
+    localCurrency: z.union([z.literal('TRY'), z.literal('SYP')]),
     exchangeRate: z.string(),
     exchangeTaxPercent: z.string(),
     useExchangeRate: z.boolean(),

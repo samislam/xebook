@@ -3,7 +3,7 @@ import type { CalculateFormValues } from './calculate-form.schema'
 export type LoopResult = {
   loop: number
   buyAmount: number
-  buyCurrency: 'USD' | 'TRY'
+  buyCurrency: 'USD' | 'TRY' | 'SYP'
   buyRateTry: number | null
   sellRateTry: number
   usdtBought: number
@@ -14,6 +14,7 @@ export type LoopResult = {
 
 export type CalculationResult = {
   mode: 'buy-in-lira' | 'buy-in-dollars'
+  localCurrency: 'TRY' | 'SYP'
   loops: LoopResult[]
   startingUsd: number
   finalUsd: number
@@ -73,7 +74,7 @@ export const calculateExchangeLoops = (values: CalculateFormValues): Calculation
       loops.push({
         loop: i,
         buyAmount: buyTry,
-        buyCurrency: 'TRY',
+        buyCurrency: values.localCurrency,
         buyRateTry: effectiveBuyRate,
         sellRateTry: sellRate,
         usdtBought,
@@ -88,6 +89,7 @@ export const calculateExchangeLoops = (values: CalculateFormValues): Calculation
 
     return {
       mode: 'buy-in-lira',
+      localCurrency: values.localCurrency,
       loops,
       startingUsd,
       finalUsd,
@@ -135,6 +137,7 @@ export const calculateExchangeLoops = (values: CalculateFormValues): Calculation
 
   return {
     mode: 'buy-in-dollars',
+    localCurrency: values.localCurrency,
     loops,
     startingUsd,
     finalUsd,

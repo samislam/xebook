@@ -1,5 +1,8 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/shadcnui/button'
+import { pageDefs } from '@/config/pages.config'
 import type { PriceCalculatorSummary } from '../price-calculator.types'
 
 const formatNumber = (value: number, maximumFractionDigits = 2) =>
@@ -24,7 +27,74 @@ const profitClass = (value: number | null) =>
     ? 'text-red-700 dark:text-red-300'
     : 'text-emerald-700 dark:text-emerald-300'
 
+const roundToTwo = (value: number) => Math.round(value * 100) / 100
+
+const convertUsdPriceToLocal = (
+  usdPrice: number,
+  localCurrency: 'SYP' | 'TRY',
+  summary: PriceCalculatorSummary
+) => {
+  const effectiveUsd = summary.effectivePricePerUsdt.USD
+  const effectiveLocal =
+    localCurrency === 'SYP' ? summary.effectivePricePerUsdt.SYP : summary.effectivePricePerUsdt.TRY
+
+  if (effectiveUsd === null || effectiveLocal === null || effectiveUsd <= 0) {
+    return null
+  }
+
+  return usdPrice * (effectiveLocal / effectiveUsd)
+}
+
+const convertTargetSellPriceToLocal = (
+  localCurrency: 'SYP' | 'TRY',
+  summary: PriceCalculatorSummary
+) => {
+  const targetSellPrice = summary.targetSell.netPricePerUsdt
+  if (targetSellPrice === null) return null
+
+  if (summary.targetSell.currency === localCurrency) {
+    return targetSellPrice
+  }
+
+  if (summary.targetSell.currency === 'USD') {
+    return convertUsdPriceToLocal(targetSellPrice, localCurrency, summary)
+  }
+
+  if (summary.targetSell.currency === 'USDT') {
+    return convertUsdPriceToLocal(targetSellPrice, localCurrency, summary)
+  }
+
+  if (summary.targetSell.currency === 'SYP' && localCurrency === 'TRY') {
+    const usdPrice = summary.effectivePricePerUsdt.SYP
+      ? targetSellPrice / summary.effectivePricePerUsdt.SYP
+      : null
+    return usdPrice === null ? null : convertUsdPriceToLocal(usdPrice, 'TRY', summary)
+  }
+
+  if (summary.targetSell.currency === 'TRY' && localCurrency === 'SYP') {
+    const usdPrice = summary.effectivePricePerUsdt.TRY
+      ? targetSellPrice / summary.effectivePricePerUsdt.TRY
+      : null
+    return usdPrice === null ? null : convertUsdPriceToLocal(usdPrice, 'SYP', summary)
+  }
+
+  return null
+}
+
 export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculatorSummary }) => {
+  const router = useRouter()
+  const simulateSeed =
+    summary.effectivePricePerUsdt.SYP !== null
+      ? {
+          currency: 'SYP' as const,
+          rate: summary.effectivePricePerUsdt.SYP,
+        }
+      : summary.effectivePricePerUsdt.TRY !== null
+        ? {
+            currency: 'TRY' as const,
+            rate: summary.effectivePricePerUsdt.TRY,
+          }
+        : null
   const primaryEffectivePrice =
     summary.effectivePricePerUsdt.SYP !== null
       ? {
@@ -62,6 +132,31 @@ export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculat
     summary.targetSell.exitMode === 'PRICE'
       ? `Exit price per USDT (${summary.targetSell.currency})`
       : `Suggested sell price per USDT (${summary.targetSell.currency})`
+
+  const handleSimulate = () => {
+    if (!simulateSeed) return
+
+    const defaultSellRate = convertTargetSellPriceToLocal(simulateSeed.currency, summary)
+    const startingCapitalUsd =
+      summary.effectivePricePerUsdt.USD !== null && summary.usdtHoldings > 0
+        ? roundToTwo(summary.effectivePricePerUsdt.USD * summary.usdtHoldings)
+        : null
+
+    const params = new URLSearchParams({
+      localCurrency: simulateSeed.currency,
+      exchangeRate: roundToTwo(simulateSeed.rate).toFixed(2),
+      startingCapital: startingCapitalUsd === null ? '' : startingCapitalUsd.toFixed(2),
+      sellRate: defaultSellRate === null ? '' : roundToTwo(defaultSellRate).toFixed(2),
+      loopCount: '10',
+      compoundProfits: 'true',
+      useExchangeRate: 'true',
+      applyCommission: 'false',
+      autoCalculate: 'true',
+    })
+
+    router.push(`${pageDefs.simulate.href}?${params.toString()}`)
+  }
+
   return (
     <div className="grid gap-6">
       <section className="rounded-3xl border border-emerald-300/60 bg-emerald-50/90 p-5 shadow-sm dark:border-emerald-500/30 dark:bg-emerald-500/10">
@@ -71,7 +166,19 @@ export const PriceCalculatorSummaryView = ({ summary }: { summary: PriceCalculat
         {primaryEffectivePrice ? (
           <div className="mt-3 space-y-4">
             <div>
-              <p className="text-muted-foreground text-sm">{primaryEffectivePrice.label}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-muted-foreground text-sm">{primaryEffectivePrice.label}</p>
+                {simulateSeed ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 rounded-full bg-white/80 px-3 text-xs font-semibold dark:bg-white/10"
+                    onClick={handleSimulate}
+                  >
+                    Simulate
+                  </Button>
+                ) : null}
+              </div>
               <p className="mt-1 text-4xl font-black text-emerald-700 dark:text-emerald-300">
                 {primaryEffectivePrice.value}
               </p>

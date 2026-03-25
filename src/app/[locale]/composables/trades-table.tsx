@@ -7,19 +7,26 @@ import { type LoopResult } from './calculate'
 type TradesTableProps = {
   data: LoopResult[]
   initialRows?: number
+  localCurrency?: 'TRY' | 'SYP'
 }
 
 const formatUsd = (value: number) => numeral(value).format('0,0.00')
-const formatTry = (value: number) => numeral(value).format('0,0')
+const formatLocal = (value: number) => numeral(value).format('0,0')
 const formatUsdt = (value: number) => numeral(value).format('0,0.00')
 const formatRate = (value: number) => numeral(value).format('0,0')
-const formatTrySigned = (value: number) => `${value >= 0 ? '+' : '-'}₺${formatTry(Math.abs(value))}`
+const currencySymbol: Record<'USD' | 'TRY' | 'SYP', string> = {
+  USD: '$',
+  TRY: '₺',
+  SYP: '£',
+}
+const formatLocalSigned = (value: number, localCurrency: 'TRY' | 'SYP') =>
+  `${value >= 0 ? '+' : '-'}${currencySymbol[localCurrency]}${formatLocal(Math.abs(value))}`
 const formatUsdSigned = (value: number) =>
   `${value >= 0 ? '+$' : '-$'}${formatUsd(Math.abs(value))}`
 const formatPctSigned = (value: number) =>
   `${value >= 0 ? '+' : '-'}${numeral(Math.abs(value)).format('0,0.00')}%`
 
-export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
+export const TradesTable = ({ data, initialRows = 0, localCurrency = 'TRY' }: TradesTableProps) => {
   const totals = data.reduce(
     (acc, loop) => {
       acc.buy += loop.buyAmount
@@ -36,6 +43,7 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
   const buyRateTry = firstLoop?.buyRateTry ?? null
   const sellRateTry = firstLoop?.sellRateTry ?? null
   const emptyRowsCount = Math.max(0, initialRows - data.length)
+  const localCurrencySymbol = currencySymbol[localCurrency]
 
   return (
     <div className="border-border max-h-130 overflow-auto rounded-md border">
@@ -69,10 +77,10 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
               USDT
             </th>
             <th className="border-border sticky top-8 z-30 border-l bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
-              Sell (TRY)
+              {`Sell (${localCurrency})`}
             </th>
             <th className="sticky top-8 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
-              Profit (TRY)
+              {`Profit (${localCurrency})`}
             </th>
             <th className="sticky top-8 z-30 bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_-1px_0_hsl(var(--border))]">
               <span className="inline-flex items-center gap-1">
@@ -95,7 +103,7 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
             const changeTryLabel =
               changeTry === null
                 ? null
-                : `${changeTry >= 0 ? '+' : '-'}₺${formatTry(Math.abs(changeTry))}`
+                : `${changeTry >= 0 ? '+' : '-'}${localCurrencySymbol}${formatLocal(Math.abs(changeTry))}`
 
             return (
               <tr key={loop.loop} className="border-t border-black/5 dark:border-white/10">
@@ -103,13 +111,17 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
                 <td className="px-3 py-2 text-red-600 dark:text-red-400">
                   <div>
                     <p>
-                      -{loop.buyCurrency === 'USD' ? '$' : '₺'}
-                      {loop.buyCurrency === 'TRY'
-                        ? formatTry(loop.buyAmount)
-                        : formatUsd(loop.buyAmount)}
+                      -{currencySymbol[loop.buyCurrency]}
+                      {loop.buyCurrency === 'USD'
+                        ? formatUsd(loop.buyAmount)
+                        : formatLocal(loop.buyAmount)}
                     </p>
                     <p className="text-muted-foreground text-[10px]">
-                      ({loop.buyRateTry === null ? 'N/A' : `₺${formatRate(loop.buyRateTry)}`})
+                      (
+                      {loop.buyRateTry === null
+                        ? 'N/A'
+                        : `${localCurrencySymbol}${formatRate(loop.buyRateTry)}`}
+                      )
                     </p>
                   </div>
                 </td>
@@ -121,9 +133,13 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
                 </td>
                 <td className="border-border border-l px-3 py-2">
                   <div>
-                    <p>+₺{formatTry(loop.sellTry)}</p>
+                    <p>
+                      +{localCurrencySymbol}
+                      {formatLocal(loop.sellTry)}
+                    </p>
                     <p className="text-muted-foreground text-[10px]">
-                      (₺{formatRate(loop.sellRateTry)})
+                      ({localCurrencySymbol}
+                      {formatRate(loop.sellRateTry)})
                     </p>
                   </div>
                 </td>
@@ -135,7 +151,7 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
                   }
                 >
                   <div>
-                    <p>{formatTrySigned(loop.profitTry)}</p>
+                    <p>{formatLocalSigned(loop.profitTry, localCurrency)}</p>
                     <p className="text-muted-foreground text-[10px]">
                       ({formatUsdSigned(loop.profitUsd)})
                     </p>
@@ -198,14 +214,14 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
               <td className="sticky bottom-0 z-30 bg-[hsl(var(--card))] px-3 py-2 text-red-600 shadow-[inset_0_1px_0_hsl(var(--border))] dark:text-red-400">
                 <div>
                   <p>
-                    -{buyCurrency === 'USD' ? '$' : '₺'}
-                    {buyCurrency === 'USD' ? formatUsd(totals.buy) : formatTry(totals.buy)}
+                    -{buyCurrency ? currencySymbol[buyCurrency] : localCurrencySymbol}
+                    {buyCurrency === 'USD' ? formatUsd(totals.buy) : formatLocal(totals.buy)}
                   </p>
                   <p className="text-muted-foreground text-[10px]">
                     {buyRateTry === null
                       ? '(N/A)'
                       : buyCurrency === 'USD'
-                        ? `(₺${formatTry(totals.buy * buyRateTry)})`
+                        ? `(${localCurrencySymbol}${formatLocal(totals.buy * buyRateTry)})`
                         : `($${formatUsd(totals.buy / buyRateTry)})`}
                   </p>
                 </div>
@@ -215,7 +231,10 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
               </td>
               <td className="border-border sticky bottom-0 z-30 border-l bg-[hsl(var(--card))] px-3 py-2 shadow-[inset_0_1px_0_hsl(var(--border))]">
                 <div>
-                  <p>+₺{formatTry(totals.sellTry)}</p>
+                  <p>
+                    +{localCurrencySymbol}
+                    {formatLocal(totals.sellTry)}
+                  </p>
                   <p className="text-muted-foreground text-[10px]">
                     {sellRateTry ? `($${formatUsd(totals.sellTry / sellRateTry)})` : '(N/A)'}
                   </p>
@@ -229,7 +248,7 @@ export const TradesTable = ({ data, initialRows = 0 }: TradesTableProps) => {
                 }
               >
                 <div>
-                  <p>{formatTrySigned(totals.profitTry)}</p>
+                  <p>{formatLocalSigned(totals.profitTry, localCurrency)}</p>
                   <p className="text-muted-foreground text-[10px]">
                     ({formatUsdSigned(totals.profitUsd)})
                   </p>
