@@ -67,16 +67,20 @@ export const userController = new Elysia({ prefix: '/users' })
       } as const,
     }
   )
-  .patch('/:id', async ({ body, params }) => ({ data: await userService.updateUser(params.id, body) }), {
-    auth: { protected: true },
-    body: updateUserBodySchema,
-    params: userParamsSchema,
-    error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to update user'),
-    response: {
-      200: userResponseSchema,
-      ...resourceErrorResponses,
-    } as const,
-  })
+  .patch(
+    '/:id',
+    async ({ body, params }) => ({ data: await userService.updateUser(params.id, body) }),
+    {
+      auth: { protected: true },
+      body: updateUserBodySchema,
+      params: userParamsSchema,
+      error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to update user'),
+      response: {
+        200: userResponseSchema,
+        ...resourceErrorResponses,
+      } as const,
+    }
+  )
   .delete('/:id', async ({ params }) => ({ data: await userService.deleteUser(params.id) }), {
     auth: { protected: true },
     params: userParamsSchema,
@@ -111,12 +115,16 @@ export const userController = new Elysia({ prefix: '/users' })
       ...resourceErrorResponses,
     } as const,
   })
-  .post('/:id/unfreeze', async ({ params }) => ({ data: await userService.unfreezeUser(params.id) }), {
-    auth: { protected: true },
-    params: userParamsSchema,
-    error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to unfreeze user'),
-    response: {
-      200: userResponseSchema,
-      ...resourceErrorResponses,
-    } as const,
-  })
+  .post(
+    '/:id/unfreeze',
+    async ({ params }) => ({ data: await userService.unfreezeUser(params.id) }),
+    {
+      auth: { protected: true },
+      params: userParamsSchema,
+      error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to unfreeze user'),
+      response: {
+        200: userResponseSchema,
+        ...resourceErrorResponses,
+      } as const,
+    }
+  )

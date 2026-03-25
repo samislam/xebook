@@ -5,7 +5,13 @@ import { Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/shadcnui/button'
 import { InputField } from '@/components/common/input-field'
 import { NumberInput } from '@/components/common/number-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/shadcnui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/shadcnui/select'
 import {
   Dialog,
   DialogContent,
@@ -166,10 +172,13 @@ export const PriceCalculatorSettingsDialog = ({
               control={control}
               name="targetUsdtAmount"
               label="USDT amount to sell"
-              description={`Current scenario holdings: ${currentUsdtHoldings.toLocaleString('en-US', {
-                maximumFractionDigits: 4,
-                minimumFractionDigits: 0,
-              })} USDT.`}
+              description={`Current scenario holdings: ${currentUsdtHoldings.toLocaleString(
+                'en-US',
+                {
+                  maximumFractionDigits: 4,
+                  minimumFractionDigits: 0,
+                }
+              )} USDT.`}
               render={(field) => (
                 <NumberInput
                   {...field}
@@ -179,7 +188,7 @@ export const PriceCalculatorSettingsDialog = ({
                     <button
                       type="button"
                       onClick={onFillTargetUsdtAmount}
-                      className="text-xs font-semibold uppercase text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+                      className="text-xs font-semibold text-sky-600 uppercase hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
                     >
                       Max
                     </button>

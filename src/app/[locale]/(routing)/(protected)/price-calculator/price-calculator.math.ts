@@ -151,7 +151,9 @@ const consumeLots = (
 
   if (remaining > 0) {
     if (currency === 'USDT') {
-      warnings.push(`Sold or consumed ${remaining.toFixed(4)} USDT without enough scenario inventory.`)
+      warnings.push(
+        `Sold or consumed ${remaining.toFixed(4)} USDT without enough scenario inventory.`
+      )
     } else {
       consumed = addCost(consumed, createNativeCost(currency, remaining))
     }

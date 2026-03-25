@@ -21,14 +21,16 @@ export const meController = new Elysia()
       const token = typeof cookie[AUTH_COOKIE].value === 'string' ? cookie[AUTH_COOKIE].value : null
       const user = await requireAuthUser(token)
       if (!user) return status(401, { code: UNAUTHENTICATED, error: 'Unauthorized' })
-      return { data: {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        isFrozen: user.isFrozen,
-        createdAt: user.createdAt.toISOString(),
-        updatedAt: user.updatedAt.toISOString(),
-      } }
+      return {
+        data: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          isFrozen: user.isFrozen,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        },
+      }
     },
     {
       auth: { protected: true },
@@ -65,7 +67,9 @@ export const meController = new Elysia()
       const user = await requireAuthUser(token)
       if (!user) return status(401, { code: UNAUTHENTICATED, error: 'Unauthorized' })
 
-      return { data: await userService.changeMyPassword(user.id, body.currentPassword, body.newPassword) }
+      return {
+        data: await userService.changeMyPassword(user.id, body.currentPassword, body.newPassword),
+      }
     },
     {
       auth: { protected: true },

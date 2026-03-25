@@ -36,6 +36,7 @@ model User {
   isFrozen     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  priceCalculatorScenarios PriceCalculatorScenario[]
 }
 
 model TradeTransaction {
@@ -84,4 +85,17 @@ model Institution {
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   recipientTransactions TradeTransaction[]
+}
+
+model PriceCalculatorScenario {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  name      String
+  values    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId, createdAt])
 }

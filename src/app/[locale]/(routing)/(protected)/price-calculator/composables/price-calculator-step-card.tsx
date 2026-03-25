@@ -58,8 +58,7 @@ export const PriceCalculatorStepCard = ({ control, index, value, onRemove }: Pro
   const fixedFee = parseNumber(step?.fixedFee) ?? 0
   const percentFee = parseNumber(step?.percentFee) ?? 0
   const percentFeeAmount = fromAmount === null ? null : fromAmount * (percentFee / 100)
-  const totalSpent =
-    fromAmount === null ? null : fromAmount + fixedFee + (percentFeeAmount ?? 0)
+  const totalSpent = fromAmount === null ? null : fromAmount + fixedFee + (percentFeeAmount ?? 0)
   const label = step?.label?.trim() || `Step ${index + 1}`
 
   return (

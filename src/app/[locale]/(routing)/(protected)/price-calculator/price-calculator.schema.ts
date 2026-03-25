@@ -34,9 +34,7 @@ export const priceCalculatorSchema = z.object({
 
 export type PriceCalculatorValues = z.infer<typeof priceCalculatorSchema>
 
-export const createExpenseStep = (
-  overrides?: Partial<ScenarioStep>
-): ScenarioStep => ({
+export const createExpenseStep = (overrides?: Partial<ScenarioStep>): ScenarioStep => ({
   type: 'EXPENSE',
   label: 'Cashout or manual expense',
   fromCurrency: 'SYP',
@@ -50,9 +48,7 @@ export const createExpenseStep = (
   ...overrides,
 })
 
-export const createConversionStep = (
-  overrides?: Partial<ScenarioStep>
-): ScenarioStep => ({
+export const createConversionStep = (overrides?: Partial<ScenarioStep>): ScenarioStep => ({
   type: 'CONVERSION',
   label: 'Conversion',
   fromCurrency: 'SYP',
