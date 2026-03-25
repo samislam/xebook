@@ -1,19 +1,22 @@
 import { z } from 'zod'
+import { createDataResponseSchema } from '../../utils/response-schemas'
 
 export const userParamsSchema = z.object({
   id: z.string().min(1),
 })
 
-export const userResponseSchema = z.object({
+export const userSchema = z.object({
   id: z.string(),
   username: z.string(),
-  name: z.string().nullable(),
+  name: z.string(),
   isFrozen: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 })
 
-export const listUsersResponseSchema = z.array(userResponseSchema)
+export const userResponseSchema = createDataResponseSchema(userSchema)
+
+export const listUsersResponseSchema = createDataResponseSchema(z.array(userSchema))
 
 export const createUserBodySchema = z.object({
   username: z.string().trim().toLowerCase().min(1).max(100),
@@ -35,11 +38,8 @@ export const changeUserPasswordBodySchema = z.object({
   newPassword: z.string().min(8).max(255),
 })
 
-export const successResponseSchema = z.object({
+export const successSchema = z.object({
   success: z.literal(true),
 })
 
-export const errorResponseSchema = z.object({
-  code: z.string(),
-  error: z.string(),
-})
+export const successResponseSchema = createDataResponseSchema(successSchema)

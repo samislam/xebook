@@ -6,7 +6,8 @@ import { AuthMacro } from '../macros/auth.macro'
 import { authService } from '../auth/auth.service'
 import { resourceErrorClassifier } from '../../utils/resource-error-classifier'
 import { successResponseSchema, changeMyPasswordBodySchema } from './user.schemas'
-import { userResponseSchema, updateUserBodySchema, errorResponseSchema } from './user.schemas'
+import { userResponseSchema, updateUserBodySchema } from './user.schemas'
+import { errorResponseSchema, resourceErrorResponses } from '../../utils/response-schemas'
 
 const requireAuthUser = async (token: string | null | undefined) => {
   return authService.getAuthenticatedUserFromToken(token)
@@ -20,14 +21,14 @@ export const meController = new Elysia()
       const token = typeof cookie[AUTH_COOKIE].value === 'string' ? cookie[AUTH_COOKIE].value : null
       const user = await requireAuthUser(token)
       if (!user) return status(401, { code: UNAUTHENTICATED, error: 'Unauthorized' })
-      return {
+      return { data: {
         id: user.id,
         username: user.username,
         name: user.name,
         isFrozen: user.isFrozen,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
-      }
+      } }
     },
     {
       auth: { protected: true },
@@ -45,7 +46,7 @@ export const meController = new Elysia()
       const user = await requireAuthUser(token)
       if (!user) return status(401, { code: UNAUTHENTICATED, error: 'Unauthorized' })
 
-      return userService.updateUser(user.id, body)
+      return { data: await userService.updateUser(user.id, body) }
     },
     {
       auth: { protected: true },
@@ -53,13 +54,8 @@ export const meController = new Elysia()
       error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to update profile'),
       response: {
         200: userResponseSchema,
-        400: errorResponseSchema,
-        401: errorResponseSchema,
-        403: errorResponseSchema,
-        404: errorResponseSchema,
-        422: errorResponseSchema,
-        500: errorResponseSchema,
-      },
+        ...resourceErrorResponses,
+      } as const,
     }
   )
   .post(
@@ -69,7 +65,7 @@ export const meController = new Elysia()
       const user = await requireAuthUser(token)
       if (!user) return status(401, { code: UNAUTHENTICATED, error: 'Unauthorized' })
 
-      return userService.changeMyPassword(user.id, body.currentPassword, body.newPassword)
+      return { data: await userService.changeMyPassword(user.id, body.currentPassword, body.newPassword) }
     },
     {
       auth: { protected: true },
@@ -77,12 +73,7 @@ export const meController = new Elysia()
       error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to change password'),
       response: {
         200: successResponseSchema,
-        400: errorResponseSchema,
-        401: errorResponseSchema,
-        403: errorResponseSchema,
-        404: errorResponseSchema,
-        422: errorResponseSchema,
-        500: errorResponseSchema,
-      },
+        ...resourceErrorResponses,
+      } as const,
     }
   )

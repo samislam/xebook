@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { createDataResponseSchema, errorResponseSchema } from '../../utils/response-schemas'
 
 export const loginBodySchema = z.object({
   username: z.string().trim().toLowerCase().min(1).max(100),
@@ -6,11 +7,10 @@ export const loginBodySchema = z.object({
 })
 export type LoginValues = z.infer<typeof loginBodySchema>
 
-export const loginSuccessResponseSchema = z.object({
+export const loginSuccessSchema = z.object({
   success: z.literal(true),
 })
 
-export const loginFailureResponseSchema = z.object({
-  code: z.string(),
-  error: z.string(),
-})
+export const loginSuccessResponseSchema = createDataResponseSchema(loginSuccessSchema)
+
+export { errorResponseSchema as loginFailureResponseSchema }

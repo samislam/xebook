@@ -6,9 +6,10 @@ import { authService } from '../auth/auth.service'
 import { AUTH_COOKIE, NOT_FOUND } from '@/constants'
 import { userParamsSchema, userResponseSchema } from './user.schemas'
 import { createUserBodySchema, updateUserBodySchema } from './user.schemas'
-import { errorResponseSchema, successResponseSchema } from './user.schemas'
+import { successResponseSchema } from './user.schemas'
 import { resourceErrorClassifier } from '../../utils/resource-error-classifier'
 import { listUsersResponseSchema, changeUserPasswordBodySchema } from './user.schemas'
+import { errorResponseSchema, resourceErrorResponses } from '../../utils/response-schemas'
 
 const requireAuthUser = async (token: string | null | undefined) => {
   return authService.getAuthenticatedUserFromToken(token)
@@ -16,7 +17,7 @@ const requireAuthUser = async (token: string | null | undefined) => {
 
 export const userController = new Elysia({ prefix: '/users' })
   .use(AuthMacro)
-  .get('/', async () => userService.listUsers(), {
+  .get('/', async () => ({ data: await userService.listUsers() }), {
     auth: { protected: true },
     response: {
       200: listUsersResponseSchema,
@@ -30,7 +31,7 @@ export const userController = new Elysia({ prefix: '/users' })
       if (!user) {
         return status(404, { code: NOT_FOUND, error: 'User not found' })
       }
-      return user
+      return { data: user }
     },
     {
       auth: { protected: true },
@@ -39,7 +40,6 @@ export const userController = new Elysia({ prefix: '/users' })
         200: userResponseSchema,
         401: errorResponseSchema,
         404: errorResponseSchema,
-        409: errorResponseSchema,
       },
     }
   )
@@ -56,57 +56,41 @@ export const userController = new Elysia({ prefix: '/users' })
         }
       }
 
-      return userService.createUser(body)
+      return { data: await userService.createUser(body) }
     },
     {
       body: createUserBodySchema,
       error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to create user'),
       response: {
         200: userResponseSchema,
-        400: errorResponseSchema,
-        401: errorResponseSchema,
-        403: errorResponseSchema,
-        404: errorResponseSchema,
-        409: errorResponseSchema,
-        422: errorResponseSchema,
-        500: errorResponseSchema,
-      },
+        ...resourceErrorResponses,
+      } as const,
     }
   )
-  .patch('/:id', async ({ body, params }) => userService.updateUser(params.id, body), {
+  .patch('/:id', async ({ body, params }) => ({ data: await userService.updateUser(params.id, body) }), {
     auth: { protected: true },
     body: updateUserBodySchema,
     params: userParamsSchema,
     error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to update user'),
     response: {
       200: userResponseSchema,
-      400: errorResponseSchema,
-      401: errorResponseSchema,
-      403: errorResponseSchema,
-      404: errorResponseSchema,
-      409: errorResponseSchema,
-      422: errorResponseSchema,
-      500: errorResponseSchema,
-    },
+      ...resourceErrorResponses,
+    } as const,
   })
-  .delete('/:id', async ({ params }) => userService.deleteUser(params.id), {
+  .delete('/:id', async ({ params }) => ({ data: await userService.deleteUser(params.id) }), {
     auth: { protected: true },
     params: userParamsSchema,
     error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to delete user'),
     response: {
       200: successResponseSchema,
-      400: errorResponseSchema,
-      401: errorResponseSchema,
-      403: errorResponseSchema,
-      404: errorResponseSchema,
-      409: errorResponseSchema,
-      422: errorResponseSchema,
-      500: errorResponseSchema,
-    },
+      ...resourceErrorResponses,
+    } as const,
   })
   .post(
     '/:id/change-password',
-    async ({ body, params }) => userService.changeUserPassword(params.id, body.newPassword),
+    async ({ body, params }) => ({
+      data: await userService.changeUserPassword(params.id, body.newPassword),
+    }),
     {
       auth: { protected: true },
       body: changeUserPasswordBodySchema,
@@ -114,43 +98,25 @@ export const userController = new Elysia({ prefix: '/users' })
       error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to change password'),
       response: {
         200: successResponseSchema,
-        400: errorResponseSchema,
-        401: errorResponseSchema,
-        403: errorResponseSchema,
-        404: errorResponseSchema,
-        409: errorResponseSchema,
-        422: errorResponseSchema,
-        500: errorResponseSchema,
-      },
+        ...resourceErrorResponses,
+      } as const,
     }
   )
-  .post('/:id/freeze', async ({ params }) => userService.freezeUser(params.id), {
+  .post('/:id/freeze', async ({ params }) => ({ data: await userService.freezeUser(params.id) }), {
     auth: { protected: true },
     params: userParamsSchema,
     error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to freeze user'),
     response: {
       200: userResponseSchema,
-      400: errorResponseSchema,
-      401: errorResponseSchema,
-      403: errorResponseSchema,
-      404: errorResponseSchema,
-      409: errorResponseSchema,
-      422: errorResponseSchema,
-      500: errorResponseSchema,
-    },
+      ...resourceErrorResponses,
+    } as const,
   })
-  .post('/:id/unfreeze', async ({ params }) => userService.unfreezeUser(params.id), {
+  .post('/:id/unfreeze', async ({ params }) => ({ data: await userService.unfreezeUser(params.id) }), {
     auth: { protected: true },
     params: userParamsSchema,
     error: ({ code, error }) => resourceErrorClassifier(code, error, 'Failed to unfreeze user'),
     response: {
       200: userResponseSchema,
-      400: errorResponseSchema,
-      401: errorResponseSchema,
-      403: errorResponseSchema,
-      404: errorResponseSchema,
-      409: errorResponseSchema,
-      422: errorResponseSchema,
-      500: errorResponseSchema,
-    },
+      ...resourceErrorResponses,
+    } as const,
   })

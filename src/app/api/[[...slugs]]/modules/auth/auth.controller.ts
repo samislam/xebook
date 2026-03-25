@@ -3,8 +3,9 @@ import { AUTH_COOKIE } from '@/constants'
 import { authService } from './auth.service'
 import { loginBodySchema } from './auth.schemas'
 import { issueAuthToken } from '@/lib/auth/auth-token'
+import { loginSuccessResponseSchema } from './auth.schemas'
+import { authErrorResponses } from '../../utils/response-schemas'
 import { resourceErrorClassifier } from '../../utils/resource-error-classifier'
-import { loginFailureResponseSchema, loginSuccessResponseSchema } from './auth.schemas'
 import { getAuthCookieOptions, getClearedAuthCookieOptions } from '@/lib/auth/auth-cookie'
 
 export const authController = new Elysia({ prefix: '/auth' })
@@ -18,7 +19,7 @@ export const authController = new Elysia({ prefix: '/auth' })
         ...getAuthCookieOptions(),
       })
 
-      return { success: true }
+      return { data: { success: true } }
     },
     {
       body: loginBodySchema,
@@ -26,11 +27,8 @@ export const authController = new Elysia({ prefix: '/auth' })
         resourceErrorClassifier(code, error, 'Invalid username or password'),
       response: {
         200: loginSuccessResponseSchema,
-        401: loginFailureResponseSchema,
-        403: loginFailureResponseSchema,
-        422: loginFailureResponseSchema,
-        500: loginFailureResponseSchema,
-      },
+        ...authErrorResponses,
+      } as const,
     }
   )
   .post(
@@ -41,7 +39,7 @@ export const authController = new Elysia({ prefix: '/auth' })
         ...getClearedAuthCookieOptions(),
       })
 
-      return { success: true as const }
+      return { data: { success: true as const } }
     },
     {
       response: {

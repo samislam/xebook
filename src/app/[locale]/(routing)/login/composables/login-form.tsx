@@ -24,9 +24,7 @@ export const LoginForm = () => {
         username: values.username,
         password: values.password,
       })
-      if (error) {
-        throw new Error((error.value as { error?: string } | null)?.error ?? 'Login failed')
-      }
+      if (error) throw new Error(error.value?.error ?? 'Login failed')
     },
     onSuccess: () => {
       router.push(pageDefs.tradebook.href)
