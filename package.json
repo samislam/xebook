@@ -21,6 +21,7 @@
     "format": "bun ./scripts/format.ts",
     "prisma": "bun ./scripts/prisma.ts",
     "locales": "bun ./scripts/locales.ts",
+    "generate-sdk": "bun ./scripts/generate-sdk.ts",
     "start": "bun ./dist/scripts/start.js",
     "start:standalone": "node .next/standalone/server.js"
   },
@@ -93,6 +94,7 @@
     "@clscripts/del-cli": "^6.0.0",
     "@clscripts/echo-cli": "^2.0.0",
     "@clscripts/eslint": "^9.30.3",
+    "@clscripts/orval": "^8.6.2",
     "@clscripts/prettier": "^3.6.2",
     "@clscripts/prisma": "^6.11.1",
     "@clscripts/tolgee-cli": "2.13.9",

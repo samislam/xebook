@@ -72,6 +72,7 @@
         "@clscripts/del-cli": "^6.0.0",
         "@clscripts/echo-cli": "^2.0.0",
         "@clscripts/eslint": "^9.30.3",
+        "@clscripts/orval": "^8.6.2",
         "@clscripts/prettier": "^3.6.2",
         "@clscripts/prisma": "^6.11.1",
         "@clscripts/tolgee-cli": "2.13.9",
@@ -154,6 +155,8 @@
     "@clscripts/eslint": ["@clscripts/eslint@9.30.3", "", { "dependencies": { "@clscripts/cl-common": "^1.0.4" } }, "sha512-40eJE6AkII4zWKv6Gf0J/2/dMEspH3T9eQNV9+i7ZHBzWub4sY3fZrLrhM/eE/gDQEkwIuFKzrIXc7ZDPxoxCg=="],
 
     "@clscripts/next": ["@clscripts/next@15.3.5", "", { "dependencies": { "@clscripts/cl-common": "^1.0.4" } }, "sha512-z/UYQEerNBXVf2bsbA2XugfM6vz/eAjWep6ftY2WTloZhih3Zi+YZMFZ3kITguzCJC1WQAC9x68aT113EDAHcQ=="],
+
+    "@clscripts/orval": ["@clscripts/orval@8.6.2", "", { "dependencies": { "@clscripts/cl-common": "^1.0.4" } }, "sha512-Su5BztC1CZdmhHDjwj03J6w+uE5lyMhT3kHBZahl3josFbYhfKp13UT84ncE5MlOUPWQZVOTk7w63CEh1JFdPg=="],
 
     "@clscripts/prettier": ["@clscripts/prettier@3.6.2", "", { "dependencies": { "@clscripts/cl-common": "^1.0.4" } }, "sha512-cLaJ2FtBLs5uWLapVN+sIAvnr0XUMcoHtQa9EUDtCXGDnQ6BH3uO+z1ljOcsmvNaxFrLjbNFM1HuPqqHm4vu0Q=="],
 

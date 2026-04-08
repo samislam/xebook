@@ -2,7 +2,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'orval'
 
-const url = process.env.MAIN_API_URL
+const url = process.env.NEXT_PUBLIC_MAIN_API_URL
 const swaggerPath = process.env.MAIN_API_SWAGGER_API_JSON_PATH
 const configDir = path.dirname(fileURLToPath(import.meta.url))
 const outputDir = path.resolve(configDir, '../../../src/generated/main-api-sdk')
